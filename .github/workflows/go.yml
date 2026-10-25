@@ -17,3 +17,4 @@ jobs:
       - run: go vet ./...
       - run: CGO_ENABLED=0 go build -o bin/tbank ./cmd/tbank
       - run: ./bin/tbank scan -fixture testdata/carry.json > /tmp/carry-demo.json
+      - run: ./bin/tbank curve-scan -fixture testdata/curves.json > /tmp/curve-demo.json

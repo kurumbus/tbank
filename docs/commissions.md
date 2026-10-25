@@ -57,6 +57,14 @@ Each entry freezes its entry rates/fees, profit thresholds, cash rate and one ex
 
 `GetOrderPrice` previews estimated commission for the actual account, instrument, direction, quantity and price. It has no alternative-tariff input. Production entries reconcile the active tariff and simulate other profiles locally. Sandbox observations use shared market data and unverified hypothetical fees; no actual-account fee preview is claimed. `GetUserTariff` describes API limits, not brokerage commission rates. [Official orders API](https://developer.tbank.ru/invest/services/orders/methods), [users API](https://developer.tbank.ru/invest/services/accounts/users).
 
+## Curve strategies
+
+Both the OFZ/RGBI pair and the three futures calendars estimate four trade commissions: opening and closing each leg. OFZ purchases reserve the dirty price, including accrued coupon interest (ACI), while the percentage commission uses clean value. This distinction is documented in §28.7, p. 282 of the [brokerage regulations, edition 94, approved 2024-11-28](https://acdn.t-static.ru/static/documents/31ac1430-2157-46dd-af02-42d217b025d3.pdf). That inspected edition is historical; it has not been verified as the applicable 2026 regulation. Production mock entries therefore also require current account-specific `GetOrderPrice` fees to reconcile with the modeled clean-value basis.
+
+The same three trading profiles, futures exchange-fee floors and frozen entry/base-exit schedules apply. Monthly charges remain excluded. Curve entry is blocked if account-specific preview margin exceeds the margin already funded in the candidate model; the stock scanner can instead recalculate capital with the higher preview margin.
+
+Curve positions are intended to close through executable books before the earliest expiry. After `LastTrade` they enter `awaiting_settlement`: v1 has no verified curve terminal-settlement workflow and does not book terminal P&L or assume a zero cash-settled expiry commission. Such a workflow must verify the settlement values and applicable terminal charges before recognizing a closed result.
+
 ## Auditable sources
 
 PDF footer identifiers below are document versions, not independently established legal effective dates. Files were fetched on 2026-10-25 from the official alternate CDN `acdn.t-static.ru/static/documents/` using the same filenames. Canonical T-Bank URLs are linked; no source PDFs are committed.

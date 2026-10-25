@@ -1,8 +1,8 @@
 # T-Bank research scanner
 
-Go CLI using the official Invest SDK. The original `search`, `list`, `info` and `export` commands remain available. `scan` adds hourly market observations, three commission scenarios, persistent paper positions and optional Telegram alerts. **It never places broker orders.**
+Go CLI using the official Invest SDK. The original `search`, `list`, `info` and `export` commands remain available. `scan` tracks stock/future carry; `curve-scan` tracks four bond and interest-rate relative-value strategies. Both keep persistent paper positions, compare three trading-fee profiles and optionally send Telegram alerts. **They never place broker orders.**
 
-## Strategy and position lifecycle
+## Stock/future strategy and position lifecycle
 
 The scanner models buying fully funded RUB shares and selling matching **dated, physically delivered futures**. It verifies underlying identity, contract size, share lots, RUB conversion, margin, dates and executable order-book depth. Default stocks are SBER, SBERP, TATN, TATNP, GAZP and LKOH. Each stock is matched to its own future; ordinary/preferred convergence is outside this version.
 
@@ -16,6 +16,29 @@ The default paper close requires both:
 - The entry's minimum eligible tariff clears its saved net-profit and excess-profit hurdles after all modeled costs.
 
 At the future's `LastTrade`, an unclosed position becomes `awaiting_settlement`. Expired quotes cannot close it. Settlement requires explicit verified terminal data; the scanner does not manufacture convergence or a zero-price exit. These remain paper positions: simultaneous fills, available account funds and future variation-margin capacity are not guaranteed.
+
+## Four curve strategies
+
+`curve-scan` uses separate models and position records. These are conditional relative-value trades: their target is a fitted or historical relationship, and their prices need not converge by contract.
+
+| Strategy | Paired position and measured relationship | Target and remaining exposure |
+| --- | --- | --- |
+| `ofz_rgbi` | Buy a selected fixed-coupon OFZ and sell a dated RGBI index future, with quantities sized to approximate equal RUB sensitivity to a 1 bp rate move (DV01). The OFZ is priced against a local curve fitted to other bonds' complete remaining cash flows. | The fitted peer curve is the fair-value hypothesis. A zero fitted spread is a model target, not a promised outcome. Issue-specific spread, curve twists and index basis remain. |
+| `keyrate_calendar` | Opposite positions in two KEYRATE expiries. The metric is the far-minus-near quoted key rate, in basis points. KEYRATE quotes the rate directly: `14.1` means 14.1%; one contract changes by RUB 10 per bp. | Reversion toward the pair's historical median. Equal contracts offset an equal revision to both rate expectations, while the difference between the two meeting outcomes remains exposed. |
+| `ruonia_calendar` | Opposite positions in two futures on the compounded RUONIA index. The metric is the annualized log ratio of far/near index futures, in basis points; sizing accounts for maturity and index-level sensitivity. | Reversion toward a historical forward-compounding relationship. The index accumulates overnight interest, so a positive raw far/near gap is normal. Parallel-rate neutrality is a first-order approximation. |
+| `rgbi_calendar` | Opposite positions in two dated futures on the same broad clean-price OFZ index. The metric is their annualized log-price ratio, in basis points. | Reversion toward the historical financing/basis relationship. This is an expiry/carry spread, not a trade between two government-bond maturity buckets. |
+
+With the supplied configuration, the three calendar strategies require **at least 30 distinct, strictly earlier observations spanning at least 24 hours**. A new database normally needs more than a day of hourly collection before it can produce a calendar entry. History is specific to the instrument pair/model; a rolled contract pair must establish its own baseline. The current observation is not included in its target. Neither an empty history nor a new pair gets a zero-spread target.
+
+OFZ fitting instead requires at least four eligible peer bonds, including two maturing before and two after the candidate. It uses up to eight nearby peers, excludes the candidate from its own fit and rejects poor fits. Missing coupon, redemption, accrued-interest or risk-reference data does not become a fabricated zero.
+
+**OFZ/RGBI mock entry is disabled by default.** The available RGBI duration is an aggregate proxy, so `policy.allow_duration_proxy: false` leaves those signals visible without opening paper positions. Setting it to `true` opts into the approximation; the residual DV01 gate still applies. Duration matching offsets an assumed parallel curve shift, not every interest-rate movement. Perpetual `RGBIF` is excluded because it tracks a different index/funding structure.
+
+Curve entries save their legs, target, policy, cost assumptions and minimum eligible tariff. For calendars, the expected-profit scenario holds the near leg unchanged and moves the far leg to the target while preserving the modeled book shape. The OFZ scenario holds the peer curve and hedge price fixed while repricing the selected bond. These are scenario estimates, not accrued P&L. Later marks consume the executable opposite sides for both full quantities and report net P&L separately. RGBI calendars match index notional directly; when a current duration reference is unavailable, absolute DV01 is reported as unknown rather than zero risk.
+
+The normal paper close requires the saved target to be reached and the saved minimum tariff to pass both profit hurdles. The defaults also require an executable exit after **14 days** or **24 hours before the earliest leg's last trading time**, even at a loss. If no valid exit is available, the scanner records the failure instead of inventing a fill. Hedge quantities stay fixed; there is no dynamic rehedging or separate stop-loss rule. A position reaching the earliest last-trading time becomes `awaiting_settlement`. This version has no automatic settlement or `curve-positions settle` command for multi-expiry positions.
+
+OFZ marks also pause when the position has earned a coupon that remains unpaid after its entitlement record date: v1 does not track a receivable surviving a bond sale. The explicit mark error prevents a false loss or paper close in that window. Marks resume when the earned payment can be included; unknown entitlement is an error.
 
 ## Build and offline demonstrations
 
@@ -74,17 +97,64 @@ Both commands only manage paper positions. The second also sends Telegram; missi
 
 Review `config/scanner.json` before running. Rates are decimal fractions: `0.15` means 15% annually. **The default cash rate is illustrative, not fetched from the market.** Defaults include one future contract, RUB 100,000 capital per candidate, 25% extra initial-margin reserve, 5 bps execution reserve on both entry legs, a 20% delivery-price allowance and `exit_capture_fraction: "0.9"`. The entry reserve is charged once in lifecycle P&L, not on every observation. Price and funding needs can exceed these allowances. Results exclude personal tax and all monthly subscription costs.
 
+## Running and configuring curve scans
+
+```sh
+./bin/tbank curve-scan -config config/curves.json
+./bin/tbank curve-scan -config config/curves.json -state var/scanner.sqlite -notify
+./bin/tbank curve-positions list -state var/scanner.sqlite -source production -status open
+./bin/tbank curve-positions show -state var/scanner.sqlite -id 1
+```
+
+Curve scans use the same explicit-account and production/sandbox settings as stock scans. Both can share `var/scanner.sqlite` because their tables are separate. Sandbox and fixture scans append `.sandbox` and `.fixture` to the configured base path. Inspection commands require that exact resulting path. `curve-positions list` supports `-source production|sandbox|fixture` and `-status open|awaiting_settlement|closed`; `show` requires `-id` and includes observation history.
+
+`curve-scan` emits a JSON array of scan reports. A production or sandbox call has one report. With `-fixture PATH`, the input is a chronological JSON array of snapshots and each snapshot produces a report; a single fixture can contain baseline warm-up, entry and exit observations. Fixtures make no broker requests and reject `-notify`.
+
+The supplied KEYRATE fixture contains 32 invented snapshots covering baseline warm-up and subsequent spread changes:
+
+```sh
+./bin/tbank curve-scan -config config/curves.json -state var/curve-demo.sqlite -fixture testdata/curves.json
+./bin/tbank curve-positions list -state var/curve-demo.sqlite.fixture -source fixture
+./bin/tbank curve-positions show -state var/curve-demo.sqlite.fixture -id 1
+```
+
+`config/curves.json` contains these controls. Decimal rates and money are JSON strings; durations are Go duration strings such as `24h` or `30s`.
+
+| Field | Supplied default and meaning |
+| --- | --- |
+| `bond_tickers` | Explicit allowlist of 12 fixed-coupon OFZ tickers. The loader accepts 5–40 unique uppercase tickers; incomplete or unsuitable bonds are skipped. |
+| `futures_per_family`, `max_future_days` | Up to 3 dated contracts per supported family within 365 days. Active positions retain their own tracked instruments. |
+| `order_book_depth`, `timeout_seconds` | 20 levels; 240-second command deadline. |
+| `state_path` | `var/scanner.sqlite`, with source suffixes applied by scans. |
+| `alert_cooldown_minutes`, `alert_improvement_rub` | 1,440 minutes and RUB 100 for repeated-alert suppression. |
+| `policy.bond_lots`, `future_contracts` | 100 bond lots and a one-contract starting scale. The hedge is sized and checked for residual sensitivity; a one-contract configuration does not imply one contract on every leg. |
+| `policy.capital_limit_rub` | RUB 1,000,000 per independent candidate, not a shared portfolio balance. |
+| `policy.cash_rate_annual` | `0.15`, the illustrative annual cash alternative applied to required funded capital. |
+| `policy.margin_buffer_rate`, `execution_buffer_bps` | `0.5` extra initial-margin reserve and a 10 bp execution-cost reserve. |
+| `policy.carry_uncertainty_annual` | `0.05`, an annual reserve for uncertain carry over the modeled holding period. |
+| `policy.assumed_prior_future_turnover_rub` | `0`; an entry-fee scenario assumption, not a fetched account turnover. |
+| `policy.min_profit_rub`, `min_excess_profit_rub`, `min_deviation_bps` | RUB 100 net profit, RUB 100 excess over cash and 5 bp minimum metric deviation. |
+| `policy.max_residual_dv01_ratio`, `allow_duration_proxy` | `0.10` residual-sensitivity limit; `false` for opening OFZ/RGBI with the aggregate duration proxy. |
+| `policy.min_peers`, `max_curve_rmse_fraction`, `max_curve_error_fraction` | 4 peers; 0.5% RMS and 1% maximum relative bond-price fitting error. |
+| `policy.min_history`, `min_history_span`, `history_max_age` | 30 prior observations, at least 24 hours apart overall, using at most 720-hour-old history. |
+| `policy.max_quote_age`, `max_quote_skew`, `max_reference_age` | 30-second books, 5-second cross-leg skew and a 96-hour maximum RGBI risk-reference age. |
+| `policy.max_holding`, `expiry_buffer` | `336h` maximum hold and `24h` before the earliest last-trading time. |
+
+Curve capital includes the cash-funded bond purchase where applicable, each futures leg's applicable initial margin, the margin reserve and entry charges. Costs include entry and estimated exit fees for all three tariff families, execution/carry reserves and the cash benchmark. Futures notional is not treated as a cash purchase. Finite margin reserves do not eliminate variation-margin funding needs. Curve scans reject an entry if the account preview requires more margin than its modeled instrument metadata, or if fees cannot be reconciled. The separate stock scanner can instead raise its funded-capital estimate from an account preview. Sandbox and fixture estimates are labeled as unverified. Subscription fees are excluded.
+
 ## Costs and alerts
 
 See [verified commission rules and sources](docs/commissions.md).
 
 - **Investor, Trader and Premium** are compared. Bronze, Silver, Gold and Diamond have identical Premium trading rates; their monthly prices and eligibility do not enter these calculations.
-- Futures commission is the greater of the percentage charge and the MOEX exchange fee floor, rounded to kopecks. The `BUYSELLFEE` source must be present and valid; exchange fees are not added twice. Perpetual, cash-settled, special-list and non-RUB contracts are excluded. `T` shares are excluded because their Premium allowance requires a daily transaction counter.
+- Futures commission is the greater of the percentage charge and the MOEX exchange fee floor, rounded to kopecks. The `BUYSELLFEE` source must be present and valid; exchange fees are not added twice. The stock/future `scan` excludes perpetual, cash-settled, special-list and non-RUB contracts. `T` shares are excluded because their Premium allowance requires a daily transaction counter. `curve-scan` separately supports the specified dated, cash-settled RUB index/rate futures.
 - `assumed_prior_futures_turnover_rub` defaults to zero. Changing it simulates a discount, not a verified account total. A threshold-crossing order retains its pre-order rate. Entry rates and fees are frozen in each saved position.
 - Production candidates are fetched again and their actual-account entry commission previews must match a published tariff/rate/floor. Unknown tariffs, missing previews or unexplained differences suppress new entries and their alerts. Account-specific initial margin can raise required funded capital. Sandbox does not claim this validation.
 - Entry eligibility requires both net profit and excess profit above the cash benchmark. Funding includes the stock purchase, initial margin, reserve and entry fees. Quotes must be fresh, synchronized, uncrossed and tradeable, with full depth for both legs. Rejected candidates and unavailable marks remain visible in reports and history.
 
 Telegram identifies the fixed minimum eligible tariff and shows open or closed P&L for all three scenarios. It includes source and fee-validation status. Alert cooldown prevents repeated observations from flooding the chat; failed delivery can retry. No broker trades are executed by an alert or a paper close.
+
+Curve alerts name the strategy and paired sides, show the frozen target and its historical or fitted source, and separate expected target-convergence profits from current executable-close estimates or realized **mock** closes. They include the duration/parallel-curve approximation where relevant. A gap or expected profit alone is not recorded as realized P&L.
 
 ## Inspecting and settling positions
 
@@ -112,7 +182,7 @@ Source filters are `production`, `sandbox` and `fixture`; status filters are `op
 
 This is a schema illustration, not market data. Prices use the instruments' raw quote units; stored price factors convert them to money. `dividends_rub` is the cumulative cash distribution for the whole saved position, not per share. Supply both terminal prices, a nonempty source reference and a verified timestamp at or after expiry and the latest valid price mark. A later awaiting-settlement check does not prevent recording the actual earlier settlement time. The caller must check the evidence; setting `verified` does not fetch or independently verify it. Production and sandbox reject future settlement timestamps; fixtures may use a future simulation clock. Settlement charges the physical-delivery share commission, without adding a futures expiry trade commission.
 
-SQLite stores runs, `positions`, `position_observations` and notification state. Entries remain immutable; observations record marks and transitions. Existing `mock_records` remain audit-only and are not promoted into managed positions. Production, sandbox and fixtures use separate databases. Keep `var/` on persistent disk and back it up if this history matters.
+SQLite stores runs, stock and curve positions, historical curve metrics, observations and notification state. Entries remain immutable; observations record marks and transitions. Existing `mock_records` remain audit-only and are not promoted into managed positions. Production, sandbox and fixtures use separate databases. Keep `var/` on persistent disk and back it up if this history matters.
 
 ## Hourly Linux cron
 
@@ -131,4 +201,4 @@ Add to that user's crontab:
 0 * * * * /opt/tbank/deploy/run-hourly.sh >> /opt/tbank/var/hourly.log 2>&1
 ```
 
-The wrapper changes to the install directory, prevents overlap and limits a run to five minutes. Set `TBANK_INSTALL_DIR` for another path. Use the same wrapper/lock for manual production runs and rotate `var/hourly.log`. No cron entry is installed by building or testing. Hourly observations can track persistent gaps but miss opportunities between samples.
+The wrapper changes to the install directory and holds one lock while it runs the stock scan and then the curve scan serially. Each command has a five-minute process limit. If one scan fails, the other still runs, and the wrapper exits unsuccessfully if either failed. Set `TBANK_INSTALL_DIR` for another path. Use the same wrapper/lock for manual production runs and rotate `var/hourly.log`. No cron entry is installed by building or testing. Hourly observations can track persistent gaps but miss opportunities between samples.

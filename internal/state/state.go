@@ -82,6 +82,10 @@ CREATE INDEX IF NOT EXISTS mock_records_candidate ON mock_records(source, candid
 		db.Close()
 		return nil, fmt.Errorf("initialize position database: %w", err)
 	}
+	if _, err := db.Exec(curveSchema); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("initialize curve database: %w", err)
+	}
 	s := &Store{db: db}
 	if err := s.migratePositionObservationKey(); err != nil {
 		db.Close()

@@ -1,0 +1,2882 @@
+[
+  {
+    "observed_at": "2030-01-01T12:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T12:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T12:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T13:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T13:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T13:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T14:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T14:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T14:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T15:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T15:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T15:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T16:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T16:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T16:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T17:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T17:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T17:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T18:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T18:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T18:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T19:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T19:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T19:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T20:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T20:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T20:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T21:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T21:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T21:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T22:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T22:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T22:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-01T23:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-01T23:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-01T23:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T00:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T00:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T00:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T01:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T01:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T01:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T02:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T02:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T02:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T03:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T03:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T03:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T04:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T04:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T04:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T05:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T05:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T05:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T06:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T06:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T06:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T07:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T07:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T07:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T08:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T08:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T08:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T09:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T09:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T09:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T10:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T10:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T10:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T11:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T11:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T11:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T12:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T12:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T12:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T13:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T13:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T13:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T14:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T14:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T14:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T15:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T15:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T15:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T16:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T16:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T16:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T17:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T17:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T17:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T18:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T18:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T18:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "17.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "18.01",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  },
+  {
+    "observed_at": "2030-01-02T19:00:00Z",
+    "instruments": [
+      {
+        "uid": "fixture-keyrate-near",
+        "ticker": "KK_DEMO_NEAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-04-01T12:00:00Z",
+        "last_trade": "2030-04-01T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      },
+      {
+        "uid": "fixture-keyrate-far",
+        "ticker": "KK_DEMO_FAR",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "family": "KEYRATE",
+        "currency": "rub",
+        "lot": 1,
+        "price_factor": "1000",
+        "expiry": "2030-06-30T12:00:00Z",
+        "last_trade": "2030-06-30T12:00:00Z",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "short_enabled": true,
+        "qualified_only": false,
+        "initial_margin_buy_rub": "1000",
+        "initial_margin_sell_rub": "1000",
+        "exchange_fee_rub": "1",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not exchange data"
+      }
+    ],
+    "books": {
+      "fixture-keyrate-near": {
+        "uid": "fixture-keyrate-near",
+        "time": "2030-01-02T19:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "14.99",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.01",
+            "lots": 100
+          }
+        ]
+      },
+      "fixture-keyrate-far": {
+        "uid": "fixture-keyrate-far",
+        "time": "2030-01-02T19:00:00Z",
+        "consistent": true,
+        "trade_available": true,
+        "bids": [
+          {
+            "price": "15.49",
+            "lots": 100
+          }
+        ],
+        "asks": [
+          {
+            "price": "15.51",
+            "lots": 100
+          }
+        ]
+      }
+    },
+    "warnings": [
+      "Synthetic KEYRATE demonstration; no live market opportunity."
+    ]
+  }
+]

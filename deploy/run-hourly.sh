@@ -4,6 +4,11 @@ set -eu
 cd "${TBANK_INSTALL_DIR:-/opt/tbank}"
 mkdir -p var
 chmod 700 var
-# A shared file lock prevents overlapping manual/cron runs. The process timeout
-# is a second bound beyond the API context timeout configured in scanner.json.
-exec flock -n var/hourly.lock timeout 5m ./bin/tbank scan -config config/scanner.json -notify
+# One lock covers both scans; failure of one family does not starve the other.
+# Each process also has its own API timeout and a five-minute process bound.
+exec 9>var/hourly.lock
+flock -n 9 || exit 0
+result=0
+timeout 5m ./bin/tbank scan -config config/scanner.json -notify || result=1
+timeout 5m ./bin/tbank curve-scan -config config/curves.json -notify || result=1
+exit "$result"
