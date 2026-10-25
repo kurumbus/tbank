@@ -10,23 +10,10 @@ import (
 	pb "opensource.tbank.ru/invest/invest-go/proto"
 )
 
-// Ticker hints are for reporting rejected metadata only. They must never make
-// a contract eligible or substitute for its verified economic specification.
+// A ticker match alone is only a diagnostic hint. Eligibility also requires
+// an approved underlying alias and the contract's verified economic terms.
 func futureTickerHint(ticker, family string) bool {
-	if family == "CNYRUBF" || family == "GLDRUBF" {
-		return ticker == family
-	}
-	prefix := map[string]string{
-		"RGBI": "RB", "KEYRATE": "KK", "RUONIA": "RF",
-		"MX": "MX", "MM": "MM", "Si": "Si", "USDM": "UM",
-		"GOLD": "GD", "GOLDM": "GN", "CR": "CR", "GL": "GL",
-		"SBER": "SR", "SBERP": "SP", "TATN": "TT", "TATNP": "TP",
-	}[family]
-	if prefix == "" || !strings.HasPrefix(ticker, prefix) {
-		return false
-	}
-	suffix := strings.TrimPrefix(ticker, prefix)
-	return len(suffix) == 2 && strings.ContainsRune("FGHJKMNQUVXZ", rune(suffix[0])) && suffix[1] >= '0' && suffix[1] <= '9'
+	return family != "" && futureTickerProduct(ticker) == family
 }
 
 func futureAvailabilityReason(f *pb.Future, now time.Time, maxDays int, perpetual bool) string {

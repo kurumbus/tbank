@@ -80,7 +80,7 @@ The input fields are `observed_at`, `instrument_uid`, `accepted_at`, `accepted_u
 
 ## Diagnosing empty futures scans
 
-`curve-scan` and `relative-scan` include per-family discovery counts in `scan.skips`: catalogue size, recognized metadata matches, ticker-only hints, and selected contracts. Rejections include the failing rule and up to two metadata examples per reason, capped at eight reasons per selector. Ticker hints only explain potential catalogue mismatches; they do not qualify a contract. Pairing failures report expiry, fixing or underlying mismatches. Curve output also reports contracts excluded by the configured expiry buffer.
+`curve-scan` and `relative-scan` include per-family discovery counts in `scan.skips`: catalogue size, recognized metadata matches, ticker-only hints, and selected contracts. Rejections include the failing rule and up to two metadata examples per reason, capped at eight reasons per selector. A ticker alone does not qualify a contract: its product code must match an approved `basic_asset` alias, including the API's Russian descriptions and currency-pair names. This distinguishes Si/UM despite both reporting `USD/RUB`, and dated/perpetual contracts sharing `CNY/RUB` or RUB gold. Settlement, units, permissions, dates and book checks still apply. Saved family identifiers remain canonical across metadata aliases. Pairing failures report expiry, fixing or underlying mismatches. Curve output also reports contracts excluded by the configured expiry buffer.
 
 To preserve the current BASE catalogue used by discovery, including raw future types, underlying identifiers, contract size and dates:
 
