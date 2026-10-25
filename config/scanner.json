@@ -1,0 +1,21 @@
+{
+  "tickers": ["SBER", "SBERP", "TATN", "TATNP", "GAZP", "LKOH"],
+  "contracts": 1,
+  "exit_capture_fraction": "0.9",
+  "capital_limit_rub": "100000",
+  "cash_rate_annual": "0.15",
+  "margin_buffer_rate": "0.25",
+  "execution_buffer_bps": "5",
+  "settlement_price_buffer_rate": "0.20",
+  "assumed_prior_futures_turnover_rub": "0",
+  "min_profit_rub": "100",
+  "min_excess_profit_rub": "100",
+  "max_days": 180,
+  "order_book_depth": 20,
+  "max_quote_age_seconds": 30,
+  "max_quote_skew_seconds": 5,
+  "timeout_seconds": 180,
+  "state_path": "var/scanner.sqlite",
+  "alert_cooldown_minutes": 1440,
+  "alert_improvement_rub": "100"
+}

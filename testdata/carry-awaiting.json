@@ -1,0 +1,58 @@
+[
+  {
+    "pair": {
+      "stock": {
+        "uid": "fixture-stock",
+        "ticker": "SBER",
+        "class_code": "TQBR",
+        "kind": "share",
+        "currency": "rub",
+        "lot": 10,
+        "position_uid": "fixture-underlying",
+        "asset_size": "1",
+        "price_factor": "1",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true
+      },
+      "future": {
+        "uid": "fixture-future",
+        "ticker": "SRZ6",
+        "class_code": "SPBFUT",
+        "kind": "future",
+        "currency": "rub",
+        "lot": 1,
+        "underlying_position_uid": "fixture-underlying",
+        "asset_size": "100",
+        "price_factor": "1",
+        "expiry": "2026-12-18T10:00:00Z",
+        "last_trade": "2026-12-17T10:00:00Z",
+        "settlement": "physical",
+        "api_available": true,
+        "buy_available": true,
+        "sell_available": true,
+        "initial_margin": "5000",
+        "exchange_fee_per_contract": "6",
+        "exchange_fee_known": true,
+        "exchange_fee_source": "synthetic fixture, not a market fee"
+      }
+    },
+    "stock_book": {
+      "uid": "fixture-stock",
+      "time": "2026-12-18T10:00:00Z",
+      "consistent": true,
+      "trade_available": false,
+      "bids": [],
+      "asks": []
+    },
+    "future_book": {
+      "uid": "fixture-future",
+      "time": "2026-12-18T10:00:00Z",
+      "consistent": true,
+      "trade_available": false,
+      "bids": [],
+      "asks": []
+    },
+    "observed_at": "2026-12-18T10:00:01Z"
+  }
+]

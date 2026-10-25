@@ -38,6 +38,12 @@ func run(args []string) error {
 	if len(args) == 0 || isHelp(args[0]) {
 		return usageError{msg: usageText}
 	}
+	if args[0] == "positions" {
+		return cmdPositions(args[1:])
+	}
+	if args[0] == "scan" {
+		return cmdScan(args[1:])
+	}
 	switch args[0] {
 	case "search", "list", "info", "export":
 	default:
@@ -304,6 +310,8 @@ Usage:
   tbank list [-kind shares|bonds|etfs|currencies|futures|options] [-q text] [-currency rub] [-exchange text] [-api] [-limit N] [-json]
   tbank info [-class CODE] [-json] <ticker>
   tbank export [-o data/instruments.json]
+  tbank positions <list|show|settle> [-state var/scanner.sqlite] [options]
+  tbank scan [-config config/scanner.json] [-fixture testdata/carry.json] [-state path] [-notify]
 
 The token is TBANK_API_TOKEN from the environment or .env.
 TBANK_ENDPOINT defaults to the sandbox host. An empty TBANK_ACCOUNT_ID makes the SDK reuse or open a sandbox account.

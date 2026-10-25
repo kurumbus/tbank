@@ -1,0 +1,8 @@
+{
+  "stock_price": "320",
+  "future_price": "32000",
+  "observed_at": "2026-12-18T10:00:02Z",
+  "reference": "Synthetic offline settlement demonstration only; not actual exchange data",
+  "dividends_rub": "0",
+  "verified": true
+}
