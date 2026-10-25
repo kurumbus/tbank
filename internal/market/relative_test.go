@@ -82,9 +82,9 @@ func newRelativeProvider(t *testing.T) (*Provider, *relativeFake, time.Time, *ma
 	}
 	f.funds["fund"] = &pb.Etf{Uid: "fund", Ticker: "TGLD@", Isin: "RU000A101X50", PositionUid: "fund-position", ClassCode: "SPBRU", Currency: "rub", Lot: 1, ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true}
 	add := func(uid, basic, asset, units, factor string) {
-		v := &pb.Future{Uid: uid, Ticker: uid, ClassCode: "SPBFUT", Currency: "rub", Lot: 1, BasicAsset: basic, AssetType: asset, BasicAssetSize: quote(units), FuturesType: "cash_settlement", ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.AddDate(0, 0, 60)), LastTradeDate: timestamppb.New(now.AddDate(0, 0, 59))}
+		v := &pb.Future{Uid: uid, Ticker: uid, ClassCode: "SPBFUT", Currency: "rub", Lot: 1, BasicAsset: basic, AssetType: "TYPE_" + strings.ToUpper(asset), BasicAssetSize: quote(units), FuturesType: "DELIVERY_TYPE_CASH_SETTLEMENT", ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.AddDate(0, 0, 60)), LastTradeDate: timestamppb.New(now.AddDate(0, 0, 59))}
 		if asset == "security" {
-			v.FuturesType = "physical_delivery"
+			v.FuturesType = "DELIVERY_TYPE_PHYSICAL_DELIVERY"
 			v.BasicAssetPositionUid = relativeProduct(v) + "-position"
 		}
 		f.futures[uid] = v

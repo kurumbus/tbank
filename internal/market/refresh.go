@@ -31,7 +31,7 @@ func (p *Provider) RefreshPair(ctx context.Context, saved scanner.Pair) (scanner
 	if stock == nil || future == nil || stock.GetUid() != saved.Stock.UID || future.GetUid() != saved.Future.UID || stock.GetPositionUid() != saved.Stock.PositionUID || future.GetBasicAssetPositionUid() != stock.GetPositionUid() {
 		return scanner.Pair{}, fmt.Errorf("tracked pair instrument or underlying identity changed")
 	}
-	if stock.GetClassCode() != "TQBR" || future.GetClassCode() != "SPBFUT" || !strings.EqualFold(stock.GetCurrency(), "rub") || !strings.EqualFold(future.GetCurrency(), "rub") || future.GetFuturesType() != "physical_delivery" || future.GetAssetType() != "security" {
+	if stock.GetClassCode() != "TQBR" || future.GetClassCode() != "SPBFUT" || !strings.EqualFold(stock.GetCurrency(), "rub") || !strings.EqualFold(future.GetCurrency(), "rub") || futureSettlementType(future.GetFuturesType()) != "physical_delivery" || futureAssetType(future.GetAssetType()) != "security" {
 		return scanner.Pair{}, fmt.Errorf("tracked pair no longer has supported RUB share/physical future specifications")
 	}
 	size := quotation(future.GetBasicAssetSize())

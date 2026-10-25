@@ -92,7 +92,7 @@ func curveBondFixture(now time.Time) (*pb.Bond, *pb.GetBondCouponsResponse) {
 	return bond, &pb.GetBondCouponsResponse{Events: []*pb.Coupon{coupon(10, start, middle), coupon(11, middle, end)}}
 }
 func curveFutureFixture(now time.Time, uid, family string, days int) *pb.Future {
-	return &pb.Future{Uid: uid, Ticker: uid, ClassCode: "SPBFUT", Currency: "rub", Lot: 1, AssetType: "index", BasicAsset: family, FuturesType: "cash_settlement", ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.AddDate(0, 0, days)), LastTradeDate: timestamppb.New(now.AddDate(0, 0, days-1))}
+	return &pb.Future{Uid: uid, Ticker: uid, ClassCode: "SPBFUT", Currency: "rub", Lot: 1, AssetType: "TYPE_INDEX", BasicAsset: family, FuturesType: "DELIVERY_TYPE_CASH_SETTLEMENT", ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.AddDate(0, 0, days)), LastTradeDate: timestamppb.New(now.AddDate(0, 0, days-1))}
 }
 func newCurveProvider(t *testing.T) (*Provider, *curveCatalogueFake, *curveDataFake, time.Time) {
 	t.Helper()
