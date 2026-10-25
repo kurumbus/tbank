@@ -65,6 +65,55 @@ The same three trading profiles, futures exchange-fee floors and frozen entry/ba
 
 Curve positions are intended to close through executable books before the earliest expiry. After `LastTrade` they enter `awaiting_settlement`: v1 has no verified curve terminal-settlement workflow and does not book terminal P&L or assume a zero cash-settled expiry commission. Such a workflow must verify the settlement values and applicable terminal charges before recognizing a closed result.
 
+For USD-quoted relative-value futures such as GOLD/GOLDM, the paper lifecycle accumulates quote-price changes between observations using each observation's verified RUB conversion factor. Previously accrued RUB P&L remains frozen when FX changes. This is an **observation-based approximation**, not a reconstruction of the exchange's clearing variation-margin cash ledger; hourly observations can differ from actual clearing prices and conversion rates. Entry projections use the current conversion factor as a scenario assumption. Fees still use the applicable trade notional and tariff independently.
+
+## Cash shorts and overnight uncovered balances
+
+The current Investor and Trader PDFs, §11.2–11.4, and Premium PDF, §14.2–14.4, charge the following **RUB per calendar day**. A position fully closed intraday has no overnight charge. These are account-level charges, not an annual stock-borrow percentage and not separate charges for every short leg.
+
+| Aggregate uncovered balance, RUB | Investor | Trader | Premium, all levels |
+| --- | ---: | ---: | ---: |
+| Up to 5,000 inclusive | 0* | 0* | 0* |
+| Above 5,000 through 50,000 | 40 | 40 | 35 |
+| Through 100,000 | 80 | 75 | 70 |
+| Through 250,000 | 190 | 180 | 175 |
+| Through 500,000 | 375 | 350 | 340 |
+| Through 1,000,000 | 750 | 700 | 680 |
+| Through 2,500,000 | 1,850 | 1,750 | 1,700 |
+| Through 5,000,000 | 3,700 | 3,500 | 3,400 |
+| Through 10,000,000 | 7,200 | 6,900 | 6,800 |
+| Through 25,000,000 | 0.070% of balance | 0.068% of balance | 0.066% of balance |
+| Through 50,000,000 | 0.067% of balance | 0.065% of balance | 0.063% of balance |
+| Above 50,000,000 | 0.059% of balance | 0.057% of balance | 0.055% of balance |
+
+Every upper bound is inclusive. Percentage bands apply to the **whole** uncovered balance, not just the portion above a threshold. In configuration, 0.070% is the decimal daily rate `0.00070`, not `0.070`.
+
+The broker assesses the sum of uncovered RUB, foreign-currency and securities positions within one agreement daily between 00:00 and 04:00 Moscow time, using the preceding trading day's closing valuations. Futures initial margin reduces the planned RUB balance for this purpose. Weekends and holidays therefore remain chargeable when the uncovered balance persists.
+
+\* The free allowance applies to no more than three simultaneously uncovered trading accounts. From the fourth account, a balance of up to 5,000 RUB costs 5 RUB per day. The broker selects the smallest uncovered balances first; equal balances are ordered by the newer account opening date. Do not assume the exemption when the client's other accounts are unknown.
+
+A new trade can change the tariff band for the entire account. Given verified pre-existing exposure, its incremental daily cost is `fee(existing + added) - fee(existing)`; a standalone zero-balance estimate is a separately labeled scenario. Unknown existing exposure must not silently become zero. Saved mock positions need dated fee observations or an explicitly labeled estimate for every chargeable calendar day, including days without a scan. Multiple mock positions sharing one account must not each claim the same free allowance or independently ignore the combined tier.
+
+## TGLD commissions, fund expenses and reference values
+
+[T-Bank's current fund-fee help](https://www.tbank.ru/invest/help/services/capital/about/how-to-invest/) explicitly lists `TMOS`, `TRUR` and `TGLD` as free for the first **15 orders per day**, with the normal brokerage tariff from the 16th order. This fund allowance is distinct from Premium issuer benefits. An order is not an order-book level or a partial fill. Until the applicable allowance and consumed order count are verified, estimate the ordinary ETF transaction fee on both entry and exit; do not presume a new allowance at every scan or reserve a future day's exemption. The general tariff PDFs defer the specific fee for T-Capital fund units to the order preview, so reconcile the actual account preview/report as well.
+
+The [TGLD key information document dated 2026-09-30](https://cdn.t-capital-funds.ru/kids/TGLD/2026/09/61184907-5a5f-4168-95be-90d83d24deac/kid_TGLD_2026_09.pdf), §6, published 2026-10-06, caps annual fund remuneration and expenses at **2.369% of NAV** (`0.02369` as a decimal annual rate). These expenses are embedded in its NAV and market value, not a second cash debit on each ETF trade. A forward fair-value projection may use that dated cap; a realized mark based on observed ETF prices must not deduct the same embedded expenses again. The KID's absence of a subscription/redemption markup does not waive brokerage trading fees.
+
+MOEX publishes a RUB-denominated indicative NAV for the fund as [TGLDB](https://www.moex.com/ru/index/TGLDB?index=inav), available through the [official ISS index endpoint](https://iss.moex.com/iss/engines/stock/markets/index/securities/TGLDB.json?iss.meta=off). Validate `SECID=TGLDB`, `BOARDID=INAV` and `CURRENCYID=RUB`; use `marketdata.CURRENTVALUE`, with the observation timestamp constructed from `TRADEDATE` and `TIME` in Moscow time. `LASTVALUE` is not the current iNAV, and HTTP retrieval time or `SYSTIME` must not replace the valuation time. A RUB iNAV needs no additional FX multiplier. Entry eligibility requires its timestamp to agree with both current traded-leg quotes within the configured `max_quote_skew`. Delayed or stale iNAV remains a visible monitor and cannot authorize an entry merely because the endpoint was fetched recently.
+
+The manager's [daily statistics](https://t-capital-funds.ru/statistics/) separately publishes TGLD's closed-day NAV **in USD**, despite the broker's RUB trading instrument `TGLD@` (same ISIN `RU000A101X50`). This is a fallback reference, not intraday iNAV: require a matching-date verified USD/RUB conversion, and apply the same quote-time eligibility gate. Do not interpret an overnight gold-price move as a fund discount by comparing current quotes with an unchanged prior-day NAV. Keep the NAV date separate from the holdings date.
+
+The [2026-09-30 holdings report](https://cdn.t-capital-funds.ru/static/documents/otchet-scha-tgld-30-09-2026.PDF), published 2026-10-19, supports a dated gold-exposure reference: 340,137.2 grams of physical gold plus claims equivalent to 1,002,242 grams, divided by 1,100,753,262.11268 units, approximately `0.0012195096269109086` grams per unit. This calculation is a historical exposure estimate, not a claim that current holdings or a current redemption entitlement are unchanged.
+
+## Perpetual funding and dividends
+
+The [October 2026 MOEX perpetual-futures guide](https://www.moex.com/media/4218-gid-vechnye-fyuchersy-birzha.pdf), §§7, 13–15, distinguishes indicative intraday funding from the final clearing payment. Historical final values are available from the official ISS history endpoints for [GLDRUBF](https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/GLDRUBF.json) and [CNYRUBF](https://iss.moex.com/iss/history/engines/futures/markets/forts/securities/CNYRUBF.json): `history.TRADEDATE` identifies the trading day and `SWAPRATE` is the funding amount per underlying unit. For these RUB-quoted contracts, multiply by the contract's underlying lot: 1 gram for GLDRUBF and 1,000 CNY for CNYRUBF. A positive value is paid by the long to the short; signed cash flow is `-contracts_long_positive × SWAPRATE × underlying_lot`. The date-only historical row does not provide an exact payment timestamp. Position entitlement must follow the applicable clearing cutoff; absence of a row is not evidence of zero funding.
+
+Funding must be recorded once per instrument and eligible trading date. Historical averages are forecast inputs, not guaranteed future receipts. Closing the position before the clearing cutoff changes entitlement. Neither historical funding nor favorable funding forecasts replace the entry and exit broker commissions.
+
+Cash-share dividends and any compensation owed on a cash short require their own dated inputs. Do not assume a 13% personal withholding rate from the account's qualification, tariff or country of residence. Tax treatment and the short-dividend debit are separate configurable amounts/rates; unknown inputs must remain visible. MOEX's guide §21 separately states that perpetual dividend adjustments use gross dividends and form part of variation margin, so they must not be substituted for net cash-share dividends.
+
 ## Auditable sources
 
 PDF footer identifiers below are document versions, not independently established legal effective dates. Files were fetched on 2026-10-25 from the official alternate CDN `acdn.t-static.ru/static/documents/` using the same filenames. Canonical T-Bank URLs are linked; no source PDFs are committed.

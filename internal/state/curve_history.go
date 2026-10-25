@@ -112,12 +112,25 @@ func curveMetricQuoteKey(metric curve.Metric) (string, error) {
 		quotes[i] = quote{uid, timestamp(at)}
 	}
 	sort.Slice(quotes, func(i, j int) bool { return quotes[i].UID < quotes[j].UID })
+	if curve.IsRelativeStrategy(metric.Strategy) {
+		// Revised ownership, conversion or event terms are a distinct model
+		// regime. They cannot warm each other's reference history even when the
+		// underlying quote timestamps happen to be unchanged. Preserve the old
+		// curve key encoding so existing history remains deduplicated on upgrade.
+		raw, err := json.Marshal(struct {
+			Unit        string  `json:"unit"`
+			ModelSource string  `json:"model_source"`
+			Quotes      []quote `json:"quotes"`
+		}{metric.Unit, metric.ModelSource, quotes})
+		return string(raw), err
+	}
 	raw, err := json.Marshal(quotes)
 	return string(raw), err
 }
 
 func curveCandidatePairKey(candidate curve.Candidate) (string, error) {
-	if strings.TrimSpace(candidate.Strategy) == "" || candidate.Metric.Strategy != candidate.Strategy || len(candidate.Legs) < 2 {
+	cashOffer := candidate.Strategy == curve.CashOffer
+	if strings.TrimSpace(candidate.Strategy) == "" || candidate.Metric.Strategy != candidate.Strategy || (cashOffer && len(candidate.Legs) != 1) || (!cashOffer && len(candidate.Legs) < 2) {
 		return "", errors.New("curve candidate requires matching strategy and instrument pair")
 	}
 	ids := make([]string, len(candidate.Legs))
@@ -139,6 +152,16 @@ func curveCandidatePairKey(candidate curve.Candidate) (string, error) {
 		if metricIDs[i] != id {
 			return "", errors.New("curve metric instruments differ from candidate legs")
 		}
+	}
+	if cashOffer {
+		if candidate.Relationship == nil || strings.TrimSpace(candidate.Relationship.ID) == "" {
+			return "", errors.New("cash-offer candidate requires a stable event relationship ID")
+		}
+		raw, err := json.Marshal(struct {
+			InstrumentUIDs []string `json:"instrument_uids"`
+			EventID        string   `json:"event_id"`
+		}{ids, candidate.Relationship.ID})
+		return string(raw), err
 	}
 	raw, err := json.Marshal(ids)
 	return string(raw), err

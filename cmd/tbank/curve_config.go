@@ -45,15 +45,17 @@ func (p *curvePolicyConfig) UnmarshalJSON(data []byte) error {
 }
 
 type curveConfig struct {
-	BondTickers      []string          `json:"bond_tickers"`
-	FutureCount      int               `json:"futures_per_family"`
-	MaxFutureDays    int               `json:"max_future_days"`
-	Depth            int               `json:"order_book_depth"`
-	TimeoutSeconds   int               `json:"timeout_seconds"`
-	StatePath        string            `json:"state_path"`
-	CooldownMinutes  int               `json:"alert_cooldown_minutes"`
-	AlertImprovement decimal.Decimal   `json:"alert_improvement_rub"`
-	Policy           curvePolicyConfig `json:"policy"`
+	Mode             string               `json:"mode,omitempty"`
+	Relationships    []curve.Relationship `json:"relationships,omitempty"`
+	BondTickers      []string             `json:"bond_tickers"`
+	FutureCount      int                  `json:"futures_per_family"`
+	MaxFutureDays    int                  `json:"max_future_days"`
+	Depth            int                  `json:"order_book_depth"`
+	TimeoutSeconds   int                  `json:"timeout_seconds"`
+	StatePath        string               `json:"state_path"`
+	CooldownMinutes  int                  `json:"alert_cooldown_minutes"`
+	AlertImprovement decimal.Decimal      `json:"alert_improvement_rub"`
+	Policy           curvePolicyConfig    `json:"policy"`
 }
 
 func loadCurveConfig(path string) (curveConfig, error) {
@@ -72,10 +74,13 @@ func loadCurveConfig(path string) (curveConfig, error) {
 	if err = d.Decode(&extra); err != io.EOF {
 		return c, fmt.Errorf("curve config must contain one JSON object")
 	}
+	if c.Mode != "" && c.Mode != "relative" {
+		return c, fmt.Errorf("mode must be empty or relative")
+	}
 	if c.FutureCount < 2 || c.FutureCount > 3 || c.MaxFutureDays < 1 || c.MaxFutureDays > 730 {
 		return c, fmt.Errorf("futures_per_family must be 2..3 and max_future_days 1..730")
 	}
-	if len(c.BondTickers) < 5 || len(c.BondTickers) > 40 {
+	if c.Mode != "relative" && (len(c.BondTickers) < 5 || len(c.BondTickers) > 40) {
 		return c, fmt.Errorf("configure 5..40 fixed-coupon OFZ tickers")
 	}
 	seen := map[string]bool{}
@@ -84,6 +89,23 @@ func loadCurveConfig(path string) (curveConfig, error) {
 			return c, fmt.Errorf("bond tickers must be unique uppercase symbols")
 		}
 		seen[ticker] = true
+	}
+	if c.Mode == "relative" {
+		if len(c.Relationships) == 0 || len(c.Relationships) > 40 || len(c.BondTickers) != 0 {
+			return c, fmt.Errorf("relative mode requires 1..40 relationships and no bond_tickers")
+		}
+		seen = map[string]bool{}
+		for _, r := range c.Relationships {
+			if strings.TrimSpace(r.ID) == "" || seen[r.ID] || !curve.IsRelativeStrategy(r.Strategy) {
+				return c, fmt.Errorf("relationships require unique ids and a supported relative strategy")
+			}
+			seen[r.ID] = true
+			if (r.PrimaryUID == "" && r.PrimarySelector == "") || (r.Strategy != curve.CashOffer && r.HedgeUID == "" && r.HedgeSelector == "") || r.PrimaryLots <= 0 {
+				return c, fmt.Errorf("relationship %s requires selectors or UIDs and positive primary_lots", r.ID)
+			}
+		}
+	} else if len(c.Relationships) != 0 {
+		return c, fmt.Errorf("relationships require relative mode")
 	}
 	if !map[int]bool{1: true, 10: true, 20: true, 30: true, 40: true, 50: true}[c.Depth] {
 		return c, fmt.Errorf("unsupported order_book_depth")

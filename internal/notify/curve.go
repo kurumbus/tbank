@@ -29,7 +29,11 @@ func FormatCurvePositionMessage(source string, p curve.Position) string {
 		source = p.Source
 	}
 	status := strings.ToUpper(strings.ReplaceAll(p.Status, "_", " "))
-	fmt.Fprintf(&b, "MOCK / %s | curve position #%d\n", label(status, 36), p.ID)
+	positionLabel := "curve"
+	if curve.IsRelativeStrategy(e.Strategy) {
+		positionLabel = "relative-value"
+	}
+	fmt.Fprintf(&b, "MOCK / %s | %s position #%d\n", label(status, 36), positionLabel, p.ID)
 	fmt.Fprintf(&b, "Strategy: %s | source: %s\n", curveStrategy(e.Strategy), label(source, 64))
 	fmt.Fprintf(&b, "Opened: %s | minimum eligible tariff: %s (fixed)\n", date(p.OpenedAt), label(e.MinimumTariff, 36))
 	for i, leg := range e.Legs {
@@ -57,7 +61,7 @@ func FormatCurvePositionMessage(source string, p curve.Position) string {
 	}
 	if e.Strategy == curve.OFZRGBI {
 		fmt.Fprintf(&b, "Peer-curve minimum: %d bonds; fitted fair-value target, not contractual convergence.\n", policy.MinPeers)
-	} else {
+	} else if e.Strategy != curve.StandardMini && e.Strategy != curve.FundNAV && e.Strategy != curve.CashOffer {
 		fmt.Fprintf(&b, "Historical baseline minimum: %d samples spanning %s\n", policy.MinHistory, label(policy.MinHistorySpan.String(), 32))
 	}
 	fmt.Fprintf(&b, "Capital: %s RUB | scenario horizon: %s\n", money(e.CapitalRequired), label(e.Horizon.String(), 32))
@@ -69,7 +73,7 @@ func FormatCurvePositionMessage(source string, p curve.Position) string {
 				measureLabel = "Residual DV01 (duration proxy)"
 			}
 			fmt.Fprintf(&b, "%s: %s RUB/bp\n", measureLabel, truncate(e.ResidualDV01.String(), 32))
-		} else {
+		} else if !curve.IsRelativeStrategy(e.Strategy) {
 			fmt.Fprintln(&b, "Absolute DV01 unavailable; notional mismatch is not measured rate risk.")
 		}
 	}
@@ -89,7 +93,7 @@ func FormatCurvePositionMessage(source string, p curve.Position) string {
 		fmt.Fprintf(&b, "Latest metric: %s %s | marked: %s\n", truncate(v.Metric.Value.String(), 32), label(v.Metric.Unit, 32), date(v.ObservedAt))
 		fmt.Fprintf(&b, "%s, net / excess vs cash (RUB):\n", pnlLabel)
 		writeScenarioPnL(&b, v.Scenarios)
-		fmt.Fprintf(&b, "Elapsed cash benchmark: %s RUB | coupon income: %s RUB\n", money(v.CashBenchmark), money(v.CouponIncome))
+		fmt.Fprintf(&b, "Elapsed cash benchmark: %s RUB | coupons/distributions: %s RUB | funding: %s RUB\n", money(v.CashBenchmark), money(v.CouponIncome.Add(v.CashIncome)), money(v.FundingIncome))
 	}
 	if p.Status == "closed" {
 		closedAt := time.Time{}
@@ -137,6 +141,18 @@ func curveStrategy(strategy string) string {
 		return "RUONIA calendar"
 	case curve.RGBICalendar:
 		return "RGBI calendar"
+	case curve.StandardMini:
+		return "Standard / mini futures"
+	case curve.ShareClass:
+		return "Ordinary / preferred futures"
+	case curve.PerpetualDated:
+		return "Perpetual / dated futures"
+	case curve.HoldingStub:
+		return "Holding-company residual"
+	case curve.FundNAV:
+		return "Gold fund / NAV"
+	case curve.CashOffer:
+		return "Mandatory cash offer"
 	default:
 		return label(strategy, 48)
 	}

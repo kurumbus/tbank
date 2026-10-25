@@ -18,8 +18,9 @@ const (
 )
 
 // ErrAwaitingSettlement requires a persisted lifecycle transition, not an
-// invented close fill. Verified derivatives settlement is outside this version.
-var ErrAwaitingSettlement = errors.New("last trading time reached; verified settlement is required")
+// invented close fill or tender submission. Derivatives settlement is outside
+// this version; cash offers require explicit acceptance and payment evidence.
+var ErrAwaitingSettlement = errors.New("settlement boundary reached; verified payment or settlement is required")
 
 // NewPosition freezes the candidate, entry fees and zero-prior-turnover exit
 // schedules. It creates a paper position and never submits broker orders.
@@ -55,7 +56,7 @@ func NewPosition(entry Candidate, source string) (Position, error) {
 func LastTrade(p Position) time.Time {
 	var result time.Time
 	for _, leg := range p.Entry.Legs {
-		if leg.Instrument.Kind == "future" && (result.IsZero() || leg.Instrument.LastTrade.Before(result)) {
+		if leg.Instrument.Kind == "future" && !leg.Instrument.Perpetual && !leg.Instrument.LastTrade.IsZero() && (result.IsZero() || leg.Instrument.LastTrade.Before(result)) {
 			result = leg.Instrument.LastTrade
 		}
 	}
@@ -78,7 +79,9 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 	if err := ValidatePolicy(p.Policy); err != nil {
 		return Valuation{}, err
 	}
-	if p.Status == PositionAwaitingSettlement || !s.ObservedAt.Before(LastTrade(p)) {
+	lastTrade := LastTrade(p)
+	settlementDue := SettlementDue(p)
+	if p.Status == PositionAwaitingSettlement || (!settlementDue.IsZero() && !s.ObservedAt.Before(settlementDue)) {
 		return Valuation{}, ErrAwaitingSettlement
 	}
 	profiles, err := positionExitProfiles(p)
@@ -96,12 +99,13 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 		current[instrument.UID] = instrument
 	}
 	v := Valuation{ObservedAt: s.ObservedAt, Kind: "mark", ExecutionReserve: p.Entry.ExecutionReserve}
+	observedFX := false
 	for _, entry := range p.Entry.Legs {
 		i, ok := current[entry.Instrument.UID]
 		if !ok {
 			return Valuation{}, fmt.Errorf("missing current instrument %s", entry.Instrument.UID)
 		}
-		if err := samePositionInstrument(entry.Instrument, i); err != nil {
+		if err := samePositionInstrument(entry.Instrument, i, s.ObservedAt, p.Policy.MaxReferenceAge); err != nil {
 			return Valuation{}, err
 		}
 		previous := p.Entry.Snapshot.Books[i.UID].Time
@@ -112,7 +116,7 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 			return Valuation{}, fmt.Errorf("quote timestamp moved backwards for %s", i.UID)
 		}
 		closingInstrument := i
-		if entry.Side == "buy" && i.Kind == "future" {
+		if entry.Side == "buy" {
 			// Selling the owned long closes it; short-opening eligibility is
 			// irrelevant. Preserve the actual metadata in the recorded fill.
 			closingInstrument.ShortEnabled = true
@@ -123,19 +127,26 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 		}
 		close.Instrument = i
 		v.Legs = append(v.Legs, close)
-		profit := close.Value.Sub(entry.Value)
-		if entry.Side == "sell" {
-			profit = profit.Neg()
+		profit, err := positionLegProfit(p, entry, close)
+		if err != nil {
+			return Valuation{}, err
 		}
+		v.LegProfits = append(v.LegProfits, profit)
 		v.GrossProfit = v.GrossProfit.Add(profit)
+		observedFX = observedFX || (entry.Instrument.Kind == "future" && strings.EqualFold(entry.Instrument.PriceCurrency, "usd"))
 		income, err := positionCoupons(entry, p.OpenedAt, s.ObservedAt)
 		if err != nil {
 			return Valuation{}, err
 		}
 		v.CouponIncome = v.CouponIncome.Add(income)
 	}
-	if err := checkSkew(s, p.Policy, p.Entry.Legs[0].Instrument.UID, p.Entry.Legs[1].Instrument.UID); err != nil {
-		return Valuation{}, err
+	if observedFX {
+		v.Warnings = append(v.Warnings, "USD-quoted futures P&L uses observed quote increments translated at each observation's verified RUB factor; past accrual stays frozen. This is a paper approximation, not the exchange clearing variation-margin ledger.")
+	}
+	if len(p.Entry.Legs) == 2 {
+		if err := checkSkew(s, p.Policy, p.Entry.Legs[0].Instrument.UID, p.Entry.Legs[1].Instrument.UID); err != nil {
+			return Valuation{}, err
+		}
 	}
 	v.Snapshot, err = clonePositionJSON(s)
 	if err != nil {
@@ -144,6 +155,32 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 	elapsed := years(s.ObservedAt.Sub(p.OpenedAt))
 	v.CashBenchmark = p.Entry.CapitalRequired.Mul(p.Policy.CashRate).Mul(elapsed)
 	v.CarryReserve = p.Entry.CapitalRequired.Mul(p.Policy.CarryReserveRate).Mul(elapsed)
+	var cashCosts map[string][]scanner.FeeLine
+	if IsRelativeStrategy(p.Entry.Strategy) {
+		v.CashIncome, cashCosts, err = CashPositionAdjustments(p, s)
+		if err != nil {
+			return Valuation{}, err
+		}
+		var fundingWarnings []string
+		v.FundingIncome, fundingWarnings, err = FundingPositionAdjustments(p, s)
+		if err != nil {
+			return Valuation{}, err
+		}
+		v.Warnings = append(v.Warnings, fundingWarnings...)
+		borrowWarning := false
+		for _, lines := range cashCosts {
+			for _, fee := range lines {
+				if strings.HasPrefix(fee.Name, "borrow_estimated") {
+					v.Warnings = append(v.Warnings, "Cash-short carry is a conservative paper estimate from observed balances and the dated tariff schedule; previously accrued intervals remain frozen.")
+					borrowWarning = true
+					break
+				}
+			}
+			if borrowWarning {
+				break
+			}
+		}
+	}
 	for _, profile := range profiles {
 		fees, err := positionEntryFees(p.Entry, profile.Name)
 		if err != nil {
@@ -152,11 +189,12 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 		for n, leg := range v.Legs {
 			fees = append(fees, scanner.FeeLine{Name: fmt.Sprintf("exit_%d_%s", n, leg.Instrument.UID), Amount: legFee(profile, leg)})
 		}
+		fees = append(fees, cashCosts[profile.Name]...)
 		total := decimal.Zero
 		for _, fee := range fees {
 			total = total.Add(fee.Amount)
 		}
-		net := v.GrossProfit.Add(v.CouponIncome).Sub(total).Sub(v.ExecutionReserve).Sub(v.CarryReserve)
+		net := v.GrossProfit.Add(v.CouponIncome).Add(v.CashIncome).Add(v.FundingIncome).Sub(total).Sub(v.ExecutionReserve).Sub(v.CarryReserve)
 		excess := net.Sub(v.CashBenchmark)
 		annualized := decimal.Zero
 		if elapsed.IsPositive() {
@@ -165,6 +203,9 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 		v.Scenarios = append(v.Scenarios, scanner.Scenario{Profile: profile.Name, StockRate: profile.StockRate, FutureRate: profile.FutureRate, FeeSource: profile.Source, Fees: fees, TradingFees: total, NetProfit: net, ExcessProfit: excess, AnnualizedReturn: annualized, Qualifies: !net.LessThan(p.Policy.MinProfit) && !excess.LessThan(p.Policy.MinExcessProfit)})
 	}
 	v.Metric, err = positionMetric(p, s, current)
+	if err == nil && (v.Metric.Key != p.Entry.Metric.Key || v.Metric.Strategy != p.Entry.Metric.Strategy || v.Metric.Unit != p.Entry.Metric.Unit || v.Metric.ModelSource != p.Entry.Metric.ModelSource) {
+		err = fmt.Errorf("current metric identity or model differs from the frozen target")
+	}
 	if err != nil {
 		v.Warnings = append(v.Warnings, "Current convergence metric unavailable: "+err.Error()+"; target close is disabled, time exits remain active.")
 	} else if crossedPositionTarget(p.Entry.Metric.Value, p.Entry.Target, v.Metric.Value) {
@@ -177,18 +218,56 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 	if !s.ObservedAt.Before(p.OpenedAt.Add(p.Policy.MaxHolding)) {
 		v.ShouldClose, v.CloseReason = true, "max_holding"
 	}
-	if !s.ObservedAt.Before(LastTrade(p).Add(-p.Policy.ExpiryBuffer)) {
+	if !lastTrade.IsZero() && !s.ObservedAt.Before(lastTrade.Add(-p.Policy.ExpiryBuffer)) {
 		v.ShouldClose, v.CloseReason = true, "expiry_buffer"
 	}
 	return v, nil
 }
 
+// A changed FX factor never retranslates prior observed USD-futures accrual.
+// Each later mark adds only its raw close-quote change, using the current factor.
+func positionLegProfit(p Position, entry, close Leg) (decimal.Decimal, error) {
+	if entry.Instrument.Kind != "future" || !strings.EqualFold(entry.Instrument.PriceCurrency, "usd") || p.Latest == nil {
+		return LegProfit(entry, close), nil
+	}
+	if len(p.Latest.LegProfits) != len(p.Latest.Legs) {
+		return decimal.Zero, fmt.Errorf("prior per-leg USD-futures accrual is missing")
+	}
+	for n, prior := range p.Latest.Legs {
+		if prior.Instrument.UID != entry.Instrument.UID {
+			continue
+		}
+		if prior.Lots != entry.Lots || prior.Side != opposite(entry.Side) || !prior.Units.Equal(entry.Units) || close.Instrument.PriceFactorAt.Before(prior.Instrument.PriceFactorAt) {
+			return decimal.Zero, fmt.Errorf("prior USD-futures quantity or current conversion timestamp is inconsistent for %s", entry.Instrument.UID)
+		}
+		baseline := entry
+		baseline.Price = prior.Price
+		return p.Latest.LegProfits[n].Add(LegProfit(baseline, close)), nil
+	}
+	return decimal.Zero, fmt.Errorf("prior USD-futures close observation is missing for %s", entry.Instrument.UID)
+}
+
 func validateEntry(c Candidate) error {
-	if c.Snapshot.ObservedAt.IsZero() || len(c.Legs) != 2 || !c.CapitalRequired.IsPositive() || c.CapitalRequired.GreaterThan(c.Policy.CapitalLimit) || c.ExecutionReserve.IsNegative() || c.Key == "" {
+	if c.Snapshot.ObservedAt.IsZero() || len(c.Legs) < 1 || len(c.Legs) > 2 || !c.CapitalRequired.IsPositive() || c.CapitalRequired.GreaterThan(c.Policy.CapitalLimit) || c.ExecutionReserve.IsNegative() || c.Key == "" {
 		return fmt.Errorf("invalid frozen position entry")
 	}
-	if c.Strategy != OFZRGBI && c.Strategy != KEYRATECalendar && c.Strategy != RUONIACalendar && c.Strategy != RGBICalendar {
+	if c.Strategy != OFZRGBI && c.Strategy != KEYRATECalendar && c.Strategy != RUONIACalendar && c.Strategy != RGBICalendar && !IsRelativeStrategy(c.Strategy) {
 		return fmt.Errorf("unsupported position strategy")
+	}
+	if c.Strategy == CashOffer {
+		if len(c.Legs) != 1 || c.Legs[0].Side != "buy" {
+			return fmt.Errorf("cash offer requires one owned long leg")
+		}
+	} else if len(c.Legs) != 2 {
+		return fmt.Errorf("spread position requires two legs")
+	}
+	if IsRelativeStrategy(c.Strategy) && (c.Relationship == nil || c.Relationship.Strategy != c.Strategy || !c.Relationship.Verified || c.Relationship.Source == "") {
+		return fmt.Errorf("verified frozen relationship is required")
+	}
+	if c.Strategy == CashOffer {
+		if err := validateOffer(c.Snapshot, c.Policy, *c.Relationship); err != nil {
+			return err
+		}
 	}
 	if c.MinimumTariff != "investor" && c.MinimumTariff != "trader" && c.MinimumTariff != "premium" {
 		return fmt.Errorf("qualified minimum tariff is required")
@@ -214,15 +293,12 @@ func validateEntry(c Candidate) error {
 		return fmt.Errorf("entry minimum tariff differs from least eligible scenario")
 	}
 	for n, l := range c.Legs {
-		if l.Instrument.UID == "" || l.Lots <= 0 || !l.Units.IsPositive() || !l.Value.IsPositive() || !l.FeeValue.IsPositive() || (l.Side != "buy" && l.Side != "sell") || (n > 0 && l.Instrument.UID == c.Legs[0].Instrument.UID) {
+		if l.Instrument.UID == "" || l.Lots <= 0 || !l.Units.Equal(decimal.NewFromInt(l.Lots).Mul(decimal.NewFromInt(l.Instrument.Lot))) || !l.Value.IsPositive() || !l.FeeValue.IsPositive() || (l.Side != "buy" && l.Side != "sell") || (n > 0 && l.Instrument.UID == c.Legs[0].Instrument.UID) {
 			return fmt.Errorf("invalid entry leg")
 		}
 		if err := validInstrument(l.Instrument, c.Snapshot.ObservedAt); err != nil {
 			return err
 		}
-	}
-	if LastTrade(Position{Entry: c}).IsZero() {
-		return fmt.Errorf("dated future leg is required")
 	}
 	return nil
 }
@@ -252,7 +328,7 @@ func positionEntryFees(c Candidate, name string) ([]scanner.FeeLine, error) {
 			}
 		}
 	}
-	if matches != 1 || len(result) != 2 {
+	if matches != 1 || len(result) != len(c.Legs) {
 		return nil, fmt.Errorf("entry scenario %s is missing or duplicated", name)
 	}
 	return result, nil
@@ -283,9 +359,16 @@ func positionExitProfiles(p Position) ([]scanner.Profile, error) {
 	return result, nil
 }
 
-func samePositionInstrument(a, b Instrument) error {
-	if a.UID != b.UID || a.Ticker != b.Ticker || a.ClassCode != b.ClassCode || a.Kind != b.Kind || a.Family != b.Family || a.Currency != b.Currency || a.Lot != b.Lot || !a.PriceFactor.Equal(b.PriceFactor) || !a.Expiry.Equal(b.Expiry) || !a.LastTrade.Equal(b.LastTrade) {
+func samePositionInstrument(a, b Instrument, now time.Time, maxReferenceAge time.Duration) error {
+	if a.UID != b.UID || a.Ticker != b.Ticker || a.ClassCode != b.ClassCode || a.Kind != b.Kind || a.Family != b.Family || a.Currency != b.Currency || a.Lot != b.Lot || !a.UnitSize.Equal(b.UnitSize) || !strings.EqualFold(a.PriceCurrency, b.PriceCurrency) || a.Perpetual != b.Perpetual || a.SettlementReference != b.SettlementReference || a.UnderlyingUID != b.UnderlyingUID || a.SettlementType != b.SettlementType || !a.Expiry.Equal(b.Expiry) || !a.LastTrade.Equal(b.LastTrade) {
 		return fmt.Errorf("observation does not match frozen contract %s", a.UID)
+	}
+	if a.Kind == "future" && strings.EqualFold(a.PriceCurrency, "usd") {
+		if !b.PriceFactorKnown || !b.PriceFactor.IsPositive() || b.PriceFactorAt.IsZero() || b.PriceFactorAt.Before(a.PriceFactorAt) || b.PriceFactorAt.After(now) || now.Sub(b.PriceFactorAt) > maxReferenceAge || strings.TrimSpace(b.PriceFactorSource) == "" {
+			return fmt.Errorf("current verified quote conversion is required for %s", a.UID)
+		}
+	} else if !a.PriceFactor.Equal(b.PriceFactor) {
+		return fmt.Errorf("observation changes frozen contract multiplier %s", a.UID)
 	}
 	if a.Kind == "bond" && (a.Bond == nil || b.Bond == nil || !a.Bond.Nominal.Equal(b.Bond.Nominal) || !a.Bond.Maturity.Equal(b.Bond.Maturity) || a.Bond.FixedCoupon != b.Bond.FixedCoupon || a.Bond.Floating != b.Bond.Floating || a.Bond.Indexed != b.Bond.Indexed || a.Bond.Amortizing != b.Bond.Amortizing) {
 		return fmt.Errorf("observation changes frozen bond terms %s", a.UID)
@@ -357,6 +440,12 @@ func positionCouponDate(at time.Time) time.Time {
 }
 
 func positionMetric(p Position, s Snapshot, instruments map[string]Instrument) (Metric, error) {
+	if IsRelativeStrategy(p.Entry.Strategy) {
+		if p.Entry.Relationship == nil {
+			return Metric{}, fmt.Errorf("missing frozen relationship")
+		}
+		return RelativeMetric(s, p.Policy, *p.Entry.Relationship)
+	}
 	a, b := instruments[p.Entry.Legs[0].Instrument.UID], instruments[p.Entry.Legs[1].Instrument.UID]
 	if p.Entry.Strategy == OFZRGBI {
 		if a.Kind != "bond" {

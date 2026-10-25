@@ -1,10 +1,10 @@
 # T-Bank research scanner
 
-Go CLI using the official Invest SDK. The original `search`, `list`, `info` and `export` commands remain available. `scan` tracks stock/future carry; `curve-scan` tracks four bond and interest-rate relative-value strategies. Both keep persistent paper positions, compare three trading-fee profiles and optionally send Telegram alerts. **They never place broker orders.**
+Go CLI using the official Invest SDK. The original `search`, `list`, `info` and `export` commands remain available. `scan` tracks stock/future carry; `curve-scan` tracks four bond and interest-rate strategies; `relative-scan` adds six more relative-value families. All keep persistent paper positions, compare three trading-fee profiles and optionally send Telegram alerts. **They never place broker orders.**
 
 ## Stock/future strategy and position lifecycle
 
-The scanner models buying fully funded RUB shares and selling matching **dated, physically delivered futures**. It verifies underlying identity, contract size, share lots, RUB conversion, margin, dates and executable order-book depth. Default stocks are SBER, SBERP, TATN, TATNP, GAZP and LKOH. Each stock is matched to its own future; ordinary/preferred convergence is outside this version.
+The scanner models buying fully funded RUB shares and selling matching **dated, physically delivered futures**. It verifies underlying identity, contract size, share lots, RUB conversion, margin, dates and executable order-book depth. Default stocks are SBER, SBERP, TATN, TATNP, GAZP and LKOH. Each stock is matched to its own future. Ordinary/preferred futures spreads use the separate `relative-scan` command.
 
 A qualifying entry consumes stock asks and futures bids for the full quantity. The saved entry is immutable: quantities, prices, entry fees/rates, capital assumptions, profit hurdles and close target remain fixed. The first qualifying tariff in **Investor → Trader → Premium** order becomes the position's fixed minimum eligible tariff. Capital limits apply to each independent candidate, not an aggregate portfolio or wallet reservation.
 
@@ -36,9 +36,47 @@ OFZ fitting instead requires at least four eligible peer bonds, including two ma
 
 Curve entries save their legs, target, policy, cost assumptions and minimum eligible tariff. For calendars, the expected-profit scenario holds the near leg unchanged and moves the far leg to the target while preserving the modeled book shape. The OFZ scenario holds the peer curve and hedge price fixed while repricing the selected bond. These are scenario estimates, not accrued P&L. Later marks consume the executable opposite sides for both full quantities and report net P&L separately. RGBI calendars match index notional directly; when a current duration reference is unavailable, absolute DV01 is reported as unknown rather than zero risk.
 
-The normal paper close requires the saved target to be reached and the saved minimum tariff to pass both profit hurdles. The defaults also require an executable exit after **14 days** or **24 hours before the earliest leg's last trading time**, even at a loss. If no valid exit is available, the scanner records the failure instead of inventing a fill. Hedge quantities stay fixed; there is no dynamic rehedging or separate stop-loss rule. A position reaching the earliest last-trading time becomes `awaiting_settlement`. This version has no automatic settlement or `curve-positions settle` command for multi-expiry positions.
+The normal paper close requires the saved target to be reached and the saved minimum tariff to pass both profit hurdles. The defaults also require an executable exit after **14 days** or **24 hours before the earliest leg's last trading time**, even at a loss. If no valid exit is available, the scanner records the failure instead of inventing a fill. Hedge quantities stay fixed; there is no dynamic rehedging or separate stop-loss rule. A position reaching the earliest last-trading time becomes `awaiting_settlement`. Multi-expiry futures settlement remains unresolved; `curve-positions settle` supports verified cash offers only.
 
 OFZ marks also pause when the position has earned a coupon that remains unpaid after its entitlement record date: v1 does not track a receivable surviving a bond sale. The explicit mark error prevents a false loss or paper close in that window. Marks resume when the earned payment can be included; unknown entitlement is an error.
+
+## Six additional relative-value families
+
+`relative-scan` discovers current contracts from the exact selectors in `config/relative.json`. It resolves up to three matching expiries within 365 days, verifies current broker permissions and contract metadata, and retains instruments belonging to active positions after a watchlist change. It shares the curve position tables; each scan command only marks its own strategy families.
+
+| Strategy | Default instruments | Target and sizing |
+| --- | --- | --- |
+| `standard_mini` | MX/MM, Si/USDM, GOLD/GOLDM | Equal normalized prices for contracts with the same underlying, fixing and expiry. One standard contract normally hedges ten minis; current metadata determines both quantity and quote conversion. Both directions are evaluated. |
+| `share_class` | SBER/SBERP futures (SR/SP), TATN/TATNP futures (TT/TP) | Earlier median normalized ordinary/preferred price ratio, not equal share prices. SR/SP is normally 1:1; TT/TP is 1:10 because their delivery sizes differ. |
+| `perpetual_dated` | CNYRUBF/CR, GLDRUBF/GL | Earlier median normalized perpetual/dated basis, with equal underlying quantities and an explicit uncertain-carry reserve. Today's funding is not extrapolated over the holding period. |
+| `holding_stub` | ENPG/RUAL | Parent price less its ownership-equivalent RUAL value, reverting toward its own earlier median. The supplied ownership figures imply about 13.5271 RUAL shares per ENPG share. The residual includes the power business and parent financing. |
+| `fund_nav` | TGLD@ / dated GL | Fund price discount/premium to sourced RUB NAV, hedged with its reported grams of gold per unit. Quantities round to executable lots and must pass the residual-exposure gate. |
+| `cash_offer` | UGLD mandatory offer | One fully funded long share position versus the sourced RUB 0.7425 offer price. This is an event trade without a market hedge. Broker participation, purchase eligibility, cutoff, payout and terminal charges must be supplied before it can qualify. |
+
+Share-class, perpetual/dated and holding-company models require the same 30 distinct earlier observations spanning 24 hours as the calendar models. Targets, quantities and entry costs freeze when a position opens. Revised ownership facts or model definitions start a separate history regime. Standard/mini and NAV relationships use their explicit economic reference instead of a historical target.
+
+```sh
+./bin/tbank relative-scan -config config/relative.json
+./bin/tbank relative-scan -config config/relative.json -notify
+./bin/tbank relative-scan -state var/relative-demo.sqlite -fixture testdata/relative.json
+./bin/tbank curve-positions list -state var/relative-demo.sqlite.fixture
+```
+
+Reference inputs have sources and dates. The supplied holding ratio has a review deadline; fund gold exposure comes from the September 2026 manager report, including physical gold and gold-denominated NCC claims. Its monthly exposure review date is separate from fresh NAV requirements. Current RUB iNAV comes from MOEX's `TGLDB` indicator and must be synchronized with the traded books. A delayed or closed-day NAV can be displayed as a dated monitor but cannot qualify a trade. USD manager NAV requires a matching-date FX conversion; an already-RUB iNAV is not converted again. Missing or expired inputs appear in scan skips or blocked candidates. The supplied UGLD offer intentionally lacks unverified broker-processing terms, so it remains a monitor until those fields are completed. Extending a review deadline means checking the underlying source, not just changing a date.
+
+Cash-share and fund short legs include the published daily uncovered-balance charge for each tariff. The default paper assumption is zero pre-existing uncovered balance, clearly marked as an assumption; the free small-balance allowance is conservatively disabled. Borrowing estimates accrue across Moscow calendar dates from observed balances, preserve prior accrued intervals, and can be replaced by a verified charge ledger. Sale proceeds do not reduce the modeled capital reserve. Announced distributions use full gross amounts for short liabilities; long receipts require an explicitly known net amount.
+
+Perpetual marks use historical MOEX funding, with positive published funding charged to a long and credited to a short, multiplied by the contract's underlying size. Date-only observations cover fully held completed Moscow dates. Ambiguous entry/mark-day payments are reported as unbooked, with the carry reserve retained; exact timestamped reference events can resolve them. USD-quoted gold futures accrue quote changes at each observed RUB conversion, freezing earlier RUB amounts. This is explicitly an observation-based FX estimate, not a reconstruction of every clearing payment; unchanged quotes cannot rewrite prior profit merely because FX changed.
+
+TGLD uses ordinary tariff fees conservatively, assuming the shared 15-free-orders daily allowance is exhausted. A qualifying zero broker preview is recognized but does not grant free fees to every simulated tariff. The fund's sourced annual expense cap is included in the entry scenario; it is not charged again as a cash debit on marks when already reflected in NAV.
+
+Cash offers are marked at executable exchange bids before the verified broker cutoff. At cutoff they become `awaiting_settlement`; this does not assert that an instruction was submitted or accepted. Record full accepted quantity and actual payment with:
+
+```sh
+./bin/tbank curve-positions settle -state var/scanner.sqlite -id 1 -input offer-settlement.json
+```
+
+The input fields are `observed_at`, `instrument_uid`, `accepted_at`, `accepted_units`, `paid_at`, `gross_proceeds_rub`, `terminal_fee_rub`, `fee_known`, `net_distributions_rub`, `distributions_known`, `verified`, and `reference`. Acceptance must satisfy the saved terms; the full quantity and payment must reconcile. Partial acceptance is rejected. A tender charges its verified terminal fee instead of an invented exchange-sale commission. Payment time ends the capital charge; later confirmation remains in the audit history.
 
 ## Build and offline demonstrations
 
@@ -201,4 +239,4 @@ Add to that user's crontab:
 0 * * * * /opt/tbank/deploy/run-hourly.sh >> /opt/tbank/var/hourly.log 2>&1
 ```
 
-The wrapper changes to the install directory and holds one lock while it runs the stock scan and then the curve scan serially. Each command has a five-minute process limit. If one scan fails, the other still runs, and the wrapper exits unsuccessfully if either failed. Set `TBANK_INSTALL_DIR` for another path. Use the same wrapper/lock for manual production runs and rotate `var/hourly.log`. No cron entry is installed by building or testing. Hourly observations can track persistent gaps but miss opportunities between samples.
+The wrapper changes to the install directory and holds one lock while it runs `scan`, `curve-scan`, and `relative-scan` serially. Each command has a five-minute process limit. If one fails, the remaining scans still run, and the wrapper exits unsuccessfully if any failed. Set `TBANK_INSTALL_DIR` for another path. Use the same wrapper/lock for manual production runs and rotate `var/hourly.log`. No cron entry is installed by building or testing. Hourly observations can track persistent gaps but miss opportunities between samples.

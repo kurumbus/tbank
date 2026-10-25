@@ -47,6 +47,9 @@ func run(args []string) error {
 	if args[0] == "curve-scan" {
 		return cmdCurveScan(args[1:])
 	}
+	if args[0] == "relative-scan" {
+		return cmdRelativeScan(args[1:])
+	}
 	if args[0] == "curve-positions" {
 		return cmdCurvePositions(args[1:])
 	}
@@ -319,7 +322,8 @@ Usage:
   tbank positions <list|show|settle> [-state var/scanner.sqlite] [options]
   tbank scan [-config config/scanner.json] [-fixture testdata/carry.json] [-state path] [-notify]
   tbank curve-scan [-config config/curves.json] [-fixture testdata/curves.json] [-state path] [-notify]
-  tbank curve-positions <list|show> [-state var/scanner.sqlite] [options]
+  tbank relative-scan [-config config/relative.json] [-fixture path] [-state path] [-notify]
+  tbank curve-positions <list|show|settle> [-state var/scanner.sqlite] [options]
 
 The token is TBANK_API_TOKEN from the environment or .env.
 TBANK_ENDPOINT defaults to the sandbox host. An empty TBANK_ACCOUNT_ID makes the SDK reuse or open a sandbox account.

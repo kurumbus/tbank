@@ -158,3 +158,51 @@ func TestCurveActiveIdentityIgnoresDirectionAndQuantity(t *testing.T) {
 		t.Fatal("metric identity can differ from actual traded legs")
 	}
 }
+
+func TestCashOfferIdentityIsAssetAndStableEvent(t *testing.T) {
+	c := curve.Candidate{Strategy: curve.CashOffer, Relationship: &curve.Relationship{ID: "offer-event-1"}, Metric: curve.Metric{Strategy: curve.CashOffer, InstrumentUIDs: []string{"asset"}, ModelSource: "terms-v1"}, Legs: []curve.Leg{{Instrument: curve.Instrument{UID: "asset"}, Side: "buy", Lots: 1}}}
+	first, err := curveCandidatePairKey(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Key = "revised-price-and-cutoff"
+	c.Metric.ModelSource = "terms-v2"
+	c.Legs[0].Lots = 100
+	revised, err := curveCandidatePairKey(c)
+	if err != nil || revised != first {
+		t.Fatalf("term revision duplicated asset/event: %q %q %v", first, revised, err)
+	}
+	c.Relationship = &curve.Relationship{ID: "offer-event-2"}
+	other, err := curveCandidatePairKey(c)
+	if err != nil || other == first {
+		t.Fatalf("distinct event collapsed: %q %q %v", first, other, err)
+	}
+	c.Relationship = nil
+	if _, err := curveCandidatePairKey(c); err == nil {
+		t.Fatal("one-leg offer without event ID accepted")
+	}
+	c.Strategy = curve.ShareClass
+	c.Metric.Strategy = curve.ShareClass
+	if _, err := curveCandidatePairKey(c); err == nil {
+		t.Fatal("ordinary pair strategy accepted one leg")
+	}
+}
+
+func TestRelativeHistorySeparatesTermVersionsWithoutDuplicatingQuotes(t *testing.T) {
+	s := testStore(t)
+	ctx := context.Background()
+	m := historyMetric(positionStart, 1)
+	m.Key = "share-relationship"
+	m.Strategy = curve.ShareClass
+	m.ModelSource = "verified-ratio-v1"
+	saveCurveMetric(t, s, "relative-v1", "production", m)
+	m.ObservedAt = positionStart.Add(time.Hour)
+	saveCurveMetric(t, s, "relative-v1-repeat", "production", m)
+	m.ModelSource = "verified-ratio-v2"
+	m.Value = decimal.NewFromInt(2)
+	saveCurveMetric(t, s, "relative-v2", "production", m)
+	history, err := s.CurveHistory(ctx, "production", curve.ShareClass, m.Key, positionStart.Add(2*time.Hour), 100)
+	if err != nil || len(history) != 2 || history[0].ModelSource != "verified-ratio-v1" || history[1].ModelSource != "verified-ratio-v2" {
+		t.Fatalf("model regimes lost or quote repeated: %+v %v", history, err)
+	}
+}

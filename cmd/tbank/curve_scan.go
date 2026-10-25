@@ -30,9 +30,21 @@ Execution is always MOCK. No brokerage orders are placed.
 Historical baselines require distinct, earlier quote observations.
 Fixtures are a chronological JSON array of snapshots; Telegram is disabled.`
 
+const relativeScanUsage = `usage: tbank relative-scan [-config config/relative.json] [-fixture path] [-state path] [-notify]
+
+Scans standard/mini, share-class, perpetual/dated, holding-company, fund NAV,
+and mandatory cash-offer relationships. Execution is always MOCK.
+Uses curve-positions to inspect positions and record verified cash-offer settlement.
+Fixtures are chronological JSON snapshots; Telegram is disabled.`
+
 type curveProvider interface {
 	CurveSnapshot(context.Context, curve.Selection) (curve.Snapshot, error)
 	CurvePreview(context.Context, []curve.Leg, string) ([]curve.LegPreview, error)
+}
+
+type relativeProvider interface {
+	RelativeSnapshot(context.Context, curve.RelativeSelection) (curve.Snapshot, error)
+	RelativePreview(context.Context, []curve.Leg, string) ([]curve.LegPreview, error)
 }
 
 type curveReport struct {
@@ -50,14 +62,26 @@ type curveReport struct {
 }
 
 func cmdCurveScan(args []string) error {
-	fs := flag.NewFlagSet("curve-scan", flag.ContinueOnError)
+	return cmdValueScan(args, false)
+}
+
+func cmdRelativeScan(args []string) error {
+	return cmdValueScan(args, true)
+}
+
+func cmdValueScan(args []string, relative bool) error {
+	name, defaultPath, usage := "curve-scan", "config/curves.json", curveScanUsage
+	if relative {
+		name, defaultPath, usage = "relative-scan", "config/relative.json", relativeScanUsage
+	}
+	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
-	path := fs.String("config", "config/curves.json", "curve settings")
+	path := fs.String("config", defaultPath, "scanner settings")
 	statePath := fs.String("state", "", "override base database path")
 	fixturePath := fs.String("fixture", "", "offline chronological snapshots")
 	send := fs.Bool("notify", false, "send Telegram alerts")
 	if err := fs.Parse(args); err != nil || fs.NArg() != 0 {
-		return usageError{msg: curveScanUsage}
+		return usageError{msg: usage}
 	}
 	if *fixturePath != "" && *send {
 		return fmt.Errorf("fixture scans cannot send Telegram notifications")
@@ -65,6 +89,9 @@ func cmdCurveScan(args []string) error {
 	c, err := loadCurveConfig(*path)
 	if err != nil {
 		return err
+	}
+	if (c.Mode == "relative") != relative {
+		return fmt.Errorf("%s requires its matching configuration mode", name)
 	}
 	if *statePath != "" {
 		c.StatePath = *statePath
@@ -144,7 +171,7 @@ func cmdCurveScan(args []string) error {
 		return err
 	}
 	last := reports[len(reports)-1]
-	fmt.Fprintf(os.Stderr, "curve scan %s: %d metrics, %d candidates, %d opened, %d marked, %d closed, %d awaiting settlement\n", source, len(last.Scan.Metrics), len(last.Scan.Candidates), last.Opened, last.Marked, last.Closed, last.Awaiting)
+	fmt.Fprintf(os.Stderr, "%s %s: %d metrics, %d candidates, %d opened, %d marked, %d closed, %d awaiting settlement\n", name, source, len(last.Scan.Metrics), len(last.Scan.Candidates), last.Opened, last.Marked, last.Closed, last.Awaiting)
 	if failures > 0 {
 		return fmt.Errorf("curve scan completed with %d operational errors; inspect JSON report", failures)
 	}
@@ -157,11 +184,19 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 	if err != nil {
 		return r, err
 	}
+	positions = filterCurvePositions(positions, c.Mode == "relative")
 	selection := curve.Selection{BondTickers: c.BondTickers, FutureCount: c.FutureCount, MaxFutureDays: c.MaxFutureDays, Depth: c.Depth}
+	relativeSelection := curve.RelativeSelection{Relationships: c.Relationships, Depth: c.Depth, MaxPairsPerFamily: c.FutureCount, MaxDays: c.MaxFutureDays}
 	seen := map[string]bool{}
 	for _, position := range positions {
 		if position.Status == "closed" {
 			continue
+		}
+		if position.Entry.Relationship != nil {
+			relativeSelection.TrackedRelationships = append(relativeSelection.TrackedRelationships, *position.Entry.Relationship)
+		}
+		if relativeSelection.HistoryFrom.IsZero() || position.OpenedAt.Before(relativeSelection.HistoryFrom) {
+			relativeSelection.HistoryFrom = position.OpenedAt
 		}
 		for _, leg := range position.Entry.Legs {
 			if !seen[leg.Instrument.UID] {
@@ -170,24 +205,35 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 			}
 		}
 	}
+	relativeSelection.Tracked = selection.Tracked
+	fetchSnapshot := func() (curve.Snapshot, error) {
+		if c.Mode == "relative" {
+			rp, ok := p.(relativeProvider)
+			if !ok {
+				return curve.Snapshot{}, fmt.Errorf("relative market provider unavailable")
+			}
+			return rp.RelativeSnapshot(ctx, relativeSelection)
+		}
+		return p.CurveSnapshot(ctx, selection)
+	}
 	var snap curve.Snapshot
 	if fixture != nil {
 		snap = *fixture
 	} else {
-		snap, err = p.CurveSnapshot(ctx, selection)
+		snap, err = fetchSnapshot()
 	}
 	if err != nil {
 		r.Errors = append(r.Errors, "curve market data: "+err.Error())
 		snap = curve.Snapshot{ObservedAt: time.Now().UTC()}
 	} else {
-		r.Scan, err = evaluateCurveHistory(ctx, store, source, snap, c.Policy.Policy)
+		r.Scan, err = evaluateValueHistory(ctx, store, source, snap, c.Policy.Policy, c.Mode == "relative")
 		if err != nil {
 			return r, err
 		}
 		// A fresh complete snapshot rechecks every leg and reference before entry.
 		// The first observation is not inserted into history or used as its own target.
 		if fixture == nil && hasCurveCandidate(r.Scan) {
-			refreshed, e := p.CurveSnapshot(ctx, selection)
+			refreshed, e := fetchSnapshot()
 			if e != nil {
 				r.Errors = append(r.Errors, "curve recheck: "+e.Error())
 				for j := range r.Scan.Candidates {
@@ -195,7 +241,7 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 				}
 			} else {
 				snap = refreshed
-				r.Scan, err = evaluateCurveHistory(ctx, store, source, snap, c.Policy.Policy)
+				r.Scan, err = evaluateValueHistory(ctx, store, source, snap, c.Policy.Policy, c.Mode == "relative")
 				if err != nil {
 					return r, err
 				}
@@ -208,7 +254,15 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 			if candidate.MinimumTariff == "" {
 				continue
 			}
-			previews, e := p.CurvePreview(ctx, candidate.Legs, account)
+			preview := p.CurvePreview
+			if c.Mode == "relative" {
+				rp, ok := p.(relativeProvider)
+				if !ok {
+					return r, fmt.Errorf("relative fee-preview provider unavailable")
+				}
+				preview = rp.RelativePreview
+			}
+			previews, e := preview(ctx, candidate.Legs, account)
 			candidate.Previews = previews
 			if e != nil {
 				blockCurveCandidate(candidate, "broker fee preview failed: "+e.Error())
@@ -262,7 +316,7 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 		touched[curvePairIdentity(position.Entry)] = true
 		var updated curve.Position
 		var didChange bool
-		last := curve.LastTrade(position)
+		last := curve.SettlementDue(position)
 		if !last.IsZero() && !markSnapshot.ObservedAt.Before(last) {
 			updated, didChange, err = store.AwaitCurveSettlement(ctx, r.RunID, position.ID, markSnapshot.ObservedAt)
 		} else {
@@ -309,6 +363,7 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 	if err != nil {
 		return r, err
 	}
+	r.Positions = filterCurvePositions(r.Positions, c.Mode == "relative")
 	if telegram != nil {
 		notifyCurvePositions(ctx, store, telegram, &r, c, changed)
 	}
@@ -316,7 +371,15 @@ func runCurveScan(ctx context.Context, store *state.Store, p curveProvider, c cu
 }
 
 func evaluateCurveHistory(ctx context.Context, store *state.Store, source string, snap curve.Snapshot, policy curve.Policy) (curve.Scan, error) {
-	initial, err := curve.Evaluate(snap, policy, nil)
+	return evaluateValueHistory(ctx, store, source, snap, policy, false)
+}
+
+func evaluateValueHistory(ctx context.Context, store *state.Store, source string, snap curve.Snapshot, policy curve.Policy, relative bool) (curve.Scan, error) {
+	evaluate := curve.Evaluate
+	if relative {
+		evaluate = curve.EvaluateRelationships
+	}
+	initial, err := evaluate(snap, policy, nil)
 	if err != nil {
 		return initial, err
 	}
@@ -334,7 +397,7 @@ func evaluateCurveHistory(ctx context.Context, store *state.Store, source string
 		}
 		history = append(history, values...)
 	}
-	return curve.Evaluate(snap, policy, history)
+	return evaluate(snap, policy, history)
 }
 
 func hasCurveCandidate(scan curve.Scan) bool {
@@ -358,9 +421,16 @@ func curvePairIdentity(c curve.Candidate) string {
 		ids = append(ids, l.Instrument.UID)
 	}
 	sort.Strings(ids)
-	return c.Strategy + ":" + strings.Join(ids, ",")
+	key := c.Strategy + ":" + strings.Join(ids, ",")
+	if c.Strategy == curve.CashOffer && c.Relationship != nil {
+		key += ":" + c.Relationship.ID
+	}
+	return key
 }
 func curveCandidateFresh(c curve.Candidate, now time.Time) bool {
+	if curve.IsRelativeStrategy(c.Strategy) && curve.ValidateRelativeEntryAt(c, now) != nil {
+		return false
+	}
 	if c.Strategy == curve.OFZRGBI {
 		ref := c.Snapshot.RGBIReference
 		if !ref.Known || ref.AsOf.IsZero() || ref.AsOf.After(now) || now.Sub(ref.AsOf) > c.Policy.MaxReferenceAge {
@@ -377,7 +447,25 @@ func curveCandidateFresh(c curve.Candidate, now time.Time) bool {
 			return false
 		}
 	}
-	return len(c.Legs) == 2
+	if curve.IsRelativeStrategy(c.Strategy) && c.Relationship != nil {
+		if !c.Relationship.ValidUntil.IsZero() && !now.Before(c.Relationship.ValidUntil) {
+			return false
+		}
+		if c.Strategy == curve.CashOffer && c.Relationship.Offer != nil && !now.Before(c.Relationship.Offer.BrokerCutoff) {
+			return false
+		}
+	}
+	return len(c.Legs) == 2 || (c.Strategy == curve.CashOffer && len(c.Legs) == 1)
+}
+
+func filterCurvePositions(positions []curve.Position, relative bool) []curve.Position {
+	filtered := make([]curve.Position, 0, len(positions))
+	for _, p := range positions {
+		if curve.IsRelativeStrategy(p.Entry.Strategy) == relative {
+			filtered = append(filtered, p)
+		}
+	}
+	return filtered
 }
 
 func curvePreviewMatches(c curve.Candidate) bool {

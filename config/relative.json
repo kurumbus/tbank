@@ -1,0 +1,564 @@
+{
+  "futures_per_family": 3,
+  "max_future_days": 365,
+  "order_book_depth": 20,
+  "timeout_seconds": 240,
+  "state_path": "var/scanner.sqlite",
+  "alert_cooldown_minutes": 1440,
+  "alert_improvement_rub": "100",
+  "policy": {
+    "bond_lots": 100,
+    "future_contracts": 1,
+    "capital_limit_rub": "1000000",
+    "cash_rate_annual": "0.15",
+    "margin_buffer_rate": "0.5",
+    "execution_buffer_bps": "10",
+    "carry_uncertainty_annual": "0.05",
+    "assumed_prior_future_turnover_rub": "0",
+    "min_profit_rub": "100",
+    "min_excess_profit_rub": "100",
+    "min_deviation_bps": "5",
+    "max_residual_dv01_ratio": "0.10",
+    "max_curve_rmse_fraction": "0.005",
+    "max_curve_error_fraction": "0.01",
+    "min_peers": 4,
+    "min_history": 30,
+    "min_history_span": "24h",
+    "history_max_age": "720h",
+    "max_quote_age": "30s",
+    "max_quote_skew": "5s",
+    "max_reference_age": "96h",
+    "max_holding": "336h",
+    "expiry_buffer": "24h",
+    "allow_duration_proxy": false
+  },
+  "mode": "relative",
+  "relationships": [
+    {
+      "id": "imoex-standard-mini",
+      "strategy": "standard_mini",
+      "primary_selector": "MX",
+      "hedge_selector": "MM",
+      "primary_lots": 1,
+      "source": "https://www.moex.com/ru/derivatives/futures-on-indices/"
+    },
+    {
+      "id": "usd-standard-mini",
+      "strategy": "standard_mini",
+      "primary_selector": "Si",
+      "hedge_selector": "USDM",
+      "primary_lots": 1,
+      "source": "https://www.moex.com/n100610?nt=112"
+    },
+    {
+      "id": "gold-standard-mini",
+      "strategy": "standard_mini",
+      "primary_selector": "GOLD",
+      "hedge_selector": "GOLDM",
+      "primary_lots": 1,
+      "source": "https://www.moex.com/n97643"
+    },
+    {
+      "id": "sber-share-classes",
+      "strategy": "share_class",
+      "primary_selector": "SBER",
+      "hedge_selector": "SBERP",
+      "primary_lots": 1,
+      "source": "T-Bank exact SBER/SBERP underlying identities; MOEX SR/SP delivery specifications"
+    },
+    {
+      "id": "tatneft-share-classes",
+      "strategy": "share_class",
+      "primary_selector": "TATN",
+      "hedge_selector": "TATNP",
+      "primary_lots": 1,
+      "source": "T-Bank exact TATN/TATNP underlying identities; MOEX TT/TP delivery specifications"
+    },
+    {
+      "id": "cny-perpetual-dated",
+      "strategy": "perpetual_dated",
+      "primary_selector": "CNYRUBF",
+      "hedge_selector": "CR",
+      "primary_lots": 1,
+      "source": "https://www.moex.com/media/4218-gid-vechnye-fyuchersy-birzha.pdf"
+    },
+    {
+      "id": "gold-perpetual-dated",
+      "strategy": "perpetual_dated",
+      "primary_selector": "GLDRUBF",
+      "hedge_selector": "GL",
+      "primary_lots": 10,
+      "source": "https://www.moex.com/media/4218-gid-vechnye-fyuchersy-birzha.pdf"
+    },
+    {
+      "id": "enpg-rual-ownership",
+      "strategy": "holding_stub",
+      "primary_selector": "ENPG",
+      "hedge_selector": "RUAL",
+      "primary_lots": 100,
+      "verified": true,
+      "source": "https://rusal.ru/en/investors/equity-capital/ ; https://enplusgroup.com/upload/iblock/da6/9cng49guvz63e2etxlcrx73ybn3hxspy/FS_6m-2026_ENG.pdf",
+      "as_of": "2026-09-24T00:00:00Z",
+      "valid_until": "2026-12-23T00:00:00Z",
+      "holding": {
+        "shares_per_parent": "13.52712183994382295997581250",
+        "ratio_source": "RUSAL: 56.88% of 15,193,014,862 shares; En+ H1 2026 statements: 638,848,896 shares",
+        "ratio_as_of": "2026-09-24T00:00:00Z",
+        "distributions_known": false,
+        "borrow": {
+          "verified": true,
+          "as_of": "2026-10-25T00:00:00Z",
+          "valid_until": "2026-11-25T00:00:00Z",
+          "source": "https://acdn.t-static.ru/static/documents/invest-tariff-fees.pdf ; https://acdn.t-static.ru/static/documents/invest-tariff-trader.pdf ; https://acdn.t-static.ru/static/documents/invest-tariff-premium.pdf (2026 editions; calendar-day whole uncovered-balance bands)",
+          "existing_short_rub": "0",
+          "existing_balance_known": true,
+          "existing_balance_assumed": true,
+          "free_tier_eligible_known": true,
+          "free_tier_eligible": false,
+          "profile_tiers": {
+            "investor": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "40",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "80",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "190",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "375",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "750",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1850",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "7200",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.0007"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00067"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00059"
+              }
+            ],
+            "premium": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "35",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "70",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "175",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "340",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "680",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3400",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "6800",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00066"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00063"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00055"
+              }
+            ],
+            "trader": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "40",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "75",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "180",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "350",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1750",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3500",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "6900",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00068"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00065"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00057"
+              }
+            ]
+          },
+          "charges_known": false,
+          "charges_from": "0001-01-01T00:00:00Z",
+          "charges_through": "0001-01-01T00:00:00Z",
+          "charges_source": ""
+        }
+      }
+    },
+    {
+      "id": "tgld-rub-gold-nav",
+      "strategy": "fund_nav",
+      "primary_selector": "TGLD@",
+      "hedge_selector": "GL",
+      "primary_lots": 10000,
+      "verified": true,
+      "source": "https://t-capital-funds.ru/documents/mutual_funds/TGLD/",
+      "as_of": "2026-10-19T07:12:00Z",
+      "valid_until": "2026-11-25T00:00:00Z",
+      "fund": {
+        "gold_grams_per_unit": "0.001219509626910908627622744048",
+        "gold_as_of": "2026-09-30T00:00:00Z",
+        "gold_valid_until": "2026-11-25T00:00:00Z",
+        "gold_source": "https://cdn.t-capital-funds.ru/static/documents/otchet-scha-tgld-30-09-2026.PDF : sections 9.4+9.5 grams / section 5 row 15 units; includes NCC gold claims",
+        "gold_grams_per_contract": "1",
+        "contract_source": "https://www.moex.com/ru/contract.aspx?code=GL",
+        "expense_annual_cap": "0.02369",
+        "expense_known": true,
+        "expense_source": "https://cdn.t-capital-funds.ru/kids/TGLD/2026/09/61184907-5a5f-4168-95be-90d83d24deac/kid_TGLD_2026_09.pdf : section 6, as of 2026-09-30",
+        "distributions_known": true,
+        "borrow": {
+          "verified": true,
+          "as_of": "2026-10-25T00:00:00Z",
+          "valid_until": "2026-11-25T00:00:00Z",
+          "source": "https://acdn.t-static.ru/static/documents/invest-tariff-fees.pdf ; https://acdn.t-static.ru/static/documents/invest-tariff-trader.pdf ; https://acdn.t-static.ru/static/documents/invest-tariff-premium.pdf (2026 editions; calendar-day whole uncovered-balance bands)",
+          "existing_short_rub": "0",
+          "existing_balance_known": true,
+          "existing_balance_assumed": true,
+          "free_tier_eligible_known": true,
+          "free_tier_eligible": false,
+          "profile_tiers": {
+            "investor": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "40",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "80",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "190",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "375",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "750",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1850",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "7200",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.0007"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00067"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00059"
+              }
+            ],
+            "premium": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "35",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "70",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "175",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "340",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "680",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3400",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "6800",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00066"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00063"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00055"
+              }
+            ],
+            "trader": [
+              {
+                "up_to_rub": "5000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "50000",
+                "daily_fee_rub": "40",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "100000",
+                "daily_fee_rub": "75",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "250000",
+                "daily_fee_rub": "180",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "500000",
+                "daily_fee_rub": "350",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "1000000",
+                "daily_fee_rub": "700",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "2500000",
+                "daily_fee_rub": "1750",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "5000000",
+                "daily_fee_rub": "3500",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "10000000",
+                "daily_fee_rub": "6900",
+                "daily_rate": "0"
+              },
+              {
+                "up_to_rub": "25000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00068"
+              },
+              {
+                "up_to_rub": "50000000",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00065"
+              },
+              {
+                "up_to_rub": "0",
+                "daily_fee_rub": "0",
+                "daily_rate": "0.00057"
+              }
+            ]
+          },
+          "charges_known": false,
+          "charges_from": "0001-01-01T00:00:00Z",
+          "charges_through": "0001-01-01T00:00:00Z",
+          "charges_source": ""
+        },
+        "distributions_as_of": "2026-10-06T08:19:00Z",
+        "distributions_valid_until": "2026-11-25T00:00:00Z",
+        "distributions_source": "https://cdn.t-capital-funds.ru/kids/TGLD/2026/09/61184907-5a5f-4168-95be-90d83d24deac/kid_TGLD_2026_09.pdf : section 5.4 income capitalized, no distributions",
+        "no_distributions": true
+      }
+    },
+    {
+      "id": "ugld-bts-most-offer-2026",
+      "strategy": "cash_offer",
+      "primary_selector": "UGLD",
+      "primary_lots": 100,
+      "verified": true,
+      "source": "https://www.e-disclosure.ru/portal/event.aspx?EventId=3c-Cl4KiENU6W4woCohvcCA-B-B&q=",
+      "as_of": "2026-08-18T00:00:00Z",
+      "valid_until": "2026-11-30T00:00:00Z",
+      "offer": {
+        "offer_price_rub": "0.7425",
+        "price_source": "https://www.e-disclosure.ru/portal/event.aspx?EventId=3c-Cl4KiENU6W4woCohvcCA-B-B&q=",
+        "acceptance_deadline": "2026-10-26T20:59:59Z",
+        "broker_cutoff_verified": false,
+        "broker_supports_tender": false,
+        "eligible_security": false,
+        "terminal_fee_known": false,
+        "distributions_known": false
+      }
+    }
+  ]
+}
