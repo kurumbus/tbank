@@ -79,34 +79,39 @@ func (p *Provider) CurveSnapshot(ctx context.Context, selection curve.Selection)
 	if err != nil || futures == nil {
 		warn(fmt.Sprintf("Curve futures catalogue unavailable: %v", err))
 	} else {
-		families := map[string][]*pb.Future{}
-		for _, future := range futures.GetInstruments() {
-			if future == nil || !curveFamily(future.GetBasicAsset()) || !future.GetApiTradeAvailableFlag() || !future.GetBuyAvailableFlag() || !future.GetSellAvailableFlag() || !future.GetShortEnabledFlag() || !timestamp(future.GetLastTradeDate()).After(now) || timestamp(future.GetExpirationDate()).After(now.Add(time.Duration(selection.MaxFutureDays)*24*time.Hour)) {
-				continue
-			}
-			if first := timestamp(future.GetFirstTradeDate()); !first.IsZero() && first.After(now) {
-				continue
-			}
-			families[future.GetBasicAsset()] = append(families[future.GetBasicAsset()], future)
-		}
 		for _, family := range []string{"RGBI", "KEYRATE", "RUONIA"} {
-			values := families[family]
-			sort.Slice(values, func(i, j int) bool {
-				return timestamp(values[i].GetExpirationDate()).Before(timestamp(values[j].GetExpirationDate()))
-			})
-			accepted := 0
+			diagnostic := futureDiscovery{selector: family, catalogue: len(futures.GetInstruments())}
+			var values []*pb.Future
+			for _, future := range futures.GetInstruments() {
+				if future != nil && (future.GetBasicAsset() == family || futureTickerHint(future.GetTicker(), family)) {
+					values = append(values, future)
+				}
+			}
+			sortFutureChoices(values)
 			for _, future := range values {
-				if accepted == selection.FutureCount {
-					break
+				if future.GetBasicAsset() != family {
+					diagnostic.tickerOnly++
+					diagnostic.reject(future, "ticker hint matches but basic_asset does not identify the selected family")
+					continue
+				}
+				diagnostic.matched++
+				if reason := futureAvailabilityReason(future, now, selection.MaxFutureDays, false); reason != "" {
+					diagnostic.reject(future, reason)
+					continue
+				}
+				if diagnostic.selected == selection.FutureCount {
+					diagnostic.limitSkipped++
+					continue
 				}
 				instrument, e := p.mapCurveFuture(ctx, future, fees)
 				if e != nil {
-					warn(future.GetTicker() + ": " + e.Error())
+					diagnostic.reject(future, e.Error())
 					continue
 				}
 				byUID[instrument.UID] = instrument
-				accepted++
+				diagnostic.selected++
 			}
+			result.Warnings = append(result.Warnings, diagnostic.messages()...)
 		}
 	}
 	for _, saved := range selection.Tracked {

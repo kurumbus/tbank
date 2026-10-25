@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -49,6 +50,14 @@ func (p *Provider) resolveRelative(ctx context.Context, c *relativeCatalogue, de
 		}
 	}
 	resolved := []curve.Relationship{}
+	pairRejects := map[string]int{}
+	var pairExamples []string
+	rejectPair := func(a, b curve.Instrument, reason string) {
+		pairRejects[reason]++
+		if len(pairExamples) < 2 {
+			pairExamples = append(pairExamples, fmt.Sprintf("%s/%s: %s (expiry=%s/%s last_trade=%s/%s underlying=%q/%q settlement=%q/%q reference=%q/%q)", a.Ticker, b.Ticker, reason, a.Expiry.Format(time.RFC3339), b.Expiry.Format(time.RFC3339), a.LastTrade.Format(time.RFC3339), b.LastTrade.Format(time.RFC3339), a.UnderlyingUID, b.UnderlyingUID, a.SettlementType, b.SettlementType, a.SettlementReference, b.SettlementReference))
+		}
+	}
 	for _, a := range primary {
 		matches := hedge
 		if hedgeKind == "" {
@@ -59,41 +68,51 @@ func (p *Provider) resolveRelative(ctx context.Context, c *relativeCatalogue, de
 				return resolved, nil
 			}
 			if a.UID == b.UID {
+				rejectPair(a, b, "identical leg UIDs")
 				continue
 			}
 			switch definition.Strategy {
 			case curve.StandardMini:
 				if !((a.Family == "MX" && b.Family == "MM") || (a.Family == "Si" && b.Family == "USDM") || (a.Family == "GOLD" && b.Family == "GOLDM")) {
+					rejectPair(a, b, "unsupported product combination")
 					continue
 				}
 			case curve.ShareClass:
 				if !((a.Family == "SBER" && b.Family == "SBERP") || (a.Family == "TATN" && b.Family == "TATNP")) {
+					rejectPair(a, b, "unsupported product combination")
 					continue
 				}
 			case curve.HoldingStub:
 				if a.Ticker != "ENPG" || b.Ticker != "RUAL" {
+					rejectPair(a, b, "unsupported cash/product combination")
 					continue
 				}
 			case curve.CashOffer:
 				if a.Ticker != "UGLD" {
+					rejectPair(a, b, "unsupported cash/product combination")
 					continue
 				}
 			}
 			if definition.Strategy == curve.StandardMini || definition.Strategy == curve.ShareClass {
 				if a.Perpetual || b.Perpetual || !a.Expiry.Equal(b.Expiry) || !a.LastTrade.Equal(b.LastTrade) {
+					rejectPair(a, b, "expiry or last-trade mismatch, or unexpected perpetual")
 					continue
 				}
 				if definition.Strategy == curve.StandardMini && (a.SettlementType != "cash_settlement" || a.SettlementReference != b.SettlementReference || a.PriceCurrency != b.PriceCurrency || (a.UnderlyingUID != "" && b.UnderlyingUID != "" && a.UnderlyingUID != b.UnderlyingUID)) {
+					rejectPair(a, b, "settlement, fixing, quote currency or underlying mismatch")
 					continue
 				}
 				if definition.Strategy == curve.ShareClass && (a.SettlementType != "physical_delivery" || b.SettlementType != "physical_delivery" || a.UnderlyingUID == "" || b.UnderlyingUID == "" || a.UnderlyingUID == b.UnderlyingUID) {
+					rejectPair(a, b, "share delivery or underlying mismatch")
 					continue
 				}
 			}
 			if definition.Strategy == curve.PerpetualDated && (!a.Perpetual || b.Perpetual || a.SettlementReference != b.SettlementReference) {
+				rejectPair(a, b, "perpetual/dated type or fixing mismatch")
 				continue
 			}
 			if definition.Strategy == curve.FundNAV && (a.Ticker != "TGLD@" || b.Family != "GL" || b.Perpetual) {
+				rejectPair(a, b, "unsupported cash/product combination")
 				continue
 			}
 			r, e := copyRelative(definition)
@@ -104,6 +123,7 @@ func (p *Provider) resolveRelative(ctx context.Context, c *relativeCatalogue, de
 			r.HedgeUID = b.UID
 			if a.Kind == "future" && b.Kind == "future" {
 				if !a.UnitSize.IsPositive() || !b.UnitSize.IsPositive() {
+					rejectPair(a, b, "underlying unit size unavailable")
 					continue
 				}
 				r.HedgeLotsPerPrimaryLot = a.UnitSize.Div(b.UnitSize)
@@ -134,6 +154,14 @@ func (p *Provider) resolveRelative(ctx context.Context, c *relativeCatalogue, de
 			}
 			resolved = append(resolved, r)
 		}
+	}
+	if len(resolved) == 0 && len(pairRejects) > 0 {
+		var reasons []string
+		for reason, count := range pairRejects {
+			reasons = append(reasons, fmt.Sprintf("%s=%d", reason, count))
+		}
+		sort.Strings(reasons)
+		return nil, fmt.Errorf("no compatible pair from %d eligible primary and %d eligible hedge contracts: %s; examples: %s", len(primary), len(hedge), strings.Join(reasons, "; "), strings.Join(pairExamples, "; "))
 	}
 	return resolved, nil
 }
@@ -167,38 +195,48 @@ func (p *Provider) relativeChoices(ctx context.Context, c *relativeCatalogue, ui
 			choices = append(choices, f)
 		} else {
 			for _, f := range c.futures {
-				if relativeProduct(f) == selector {
+				if relativeProduct(f) == selector || futureTickerHint(f.GetTicker(), selector) {
 					choices = append(choices, f)
 				}
 			}
 		}
-		sort.Slice(choices, func(i, j int) bool {
-			a, b := timestamp(choices[i].GetExpirationDate()), timestamp(choices[j].GetExpirationDate())
-			if a.Equal(b) {
-				return choices[i].GetUid() < choices[j].GetUid()
+		sortFutureChoices(choices)
+		diagnostic := futureDiscovery{selector: selector, catalogue: len(c.futures)}
+		if uid != "" {
+			diagnostic.selector = uid
+		}
+		defer func() {
+			if c.diagnosed == nil {
+				c.diagnosed = map[string]bool{}
 			}
-			return a.Before(b)
-		})
+			if !c.diagnosed[diagnostic.selector] {
+				c.diagnostics = append(c.diagnostics, diagnostic.messages()...)
+				c.diagnosed[diagnostic.selector] = true
+			}
+		}()
 		result := []curve.Instrument{}
 		for _, f := range choices {
-			if !f.GetApiTradeAvailableFlag() || !f.GetBuyAvailableFlag() || !f.GetSellAvailableFlag() || !f.GetShortEnabledFlag() {
-				continue
-			}
 			product := relativeProduct(f)
-			perpetual := product == "CNYRUBF" || product == "GLDRUBF"
-			if first := timestamp(f.GetFirstTradeDate()); !first.IsZero() && first.After(now) {
+			if uid == "" && product != selector {
+				diagnostic.tickerOnly++
+				diagnostic.reject(f, "ticker hint matches but basic_asset does not identify the selected product")
 				continue
 			}
-			if !perpetual && (!timestamp(f.GetLastTradeDate()).After(now) || timestamp(f.GetExpirationDate()).After(now.Add(time.Duration(selection.MaxDays)*24*time.Hour))) {
+			diagnostic.matched++
+			perpetual := product == "CNYRUBF" || product == "GLDRUBF"
+			if reason := futureAvailabilityReason(f, now, selection.MaxDays, perpetual); reason != "" {
+				diagnostic.reject(f, reason)
 				continue
 			}
 			mapped, e := p.mapRelativeFuture(ctx, f, c, now)
 			if e != nil {
+				diagnostic.reject(f, e.Error())
 				if uid != "" {
 					return nil, e
 				}
 				continue
 			}
+			diagnostic.selected++
 			result = append(result, mapped)
 		}
 		return result, nil
