@@ -211,7 +211,7 @@ func curveFamily(family string) bool {
 }
 
 func (p *Provider) mapCurveFuture(ctx context.Context, f *pb.Future, fees map[string]decimal.Decimal) (curve.Instrument, error) {
-	if f == nil || f.GetUid() == "" || !curveFamily(f.GetBasicAsset()) || f.GetClassCode() != "SPBFUT" || !strings.EqualFold(f.GetCurrency(), "rub") || f.GetLot() != 1 || f.GetFuturesType() != "cash_settlement" || f.GetAssetType() != "index" {
+	if f == nil || f.GetUid() == "" || !curveFamily(f.GetBasicAsset()) || f.GetClassCode() != "SPBFUT" || !strings.EqualFold(f.GetCurrency(), "rub") || f.GetLot() != 1 || futureSettlementType(f.GetFuturesType()) != "cash_settlement" || futureAssetType(f.GetAssetType()) != "index" {
 		return curve.Instrument{}, fmt.Errorf("unsupported dated cash-settled curve contract")
 	}
 	expiry, last := timestamp(f.GetExpirationDate()), timestamp(f.GetLastTradeDate())

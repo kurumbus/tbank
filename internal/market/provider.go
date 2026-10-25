@@ -159,7 +159,7 @@ func (p *Provider) Discover(ctx context.Context, tickers []string, maxDays int) 
 		}
 		// PositionUID, not BasicAsset (often SBRF rather than SBER), is the
 		// authoritative mapping. Never infer share class from a symbol prefix.
-		if f.GetClassCode() != "SPBFUT" || f.GetFuturesType() != "physical_delivery" || f.GetAssetType() != "security" || !strings.EqualFold(f.GetCurrency(), "rub") || !f.GetApiTradeAvailableFlag() || !f.GetBuyAvailableFlag() || !f.GetSellAvailableFlag() || !f.GetShortEnabledFlag() || f.GetLot() != 1 {
+		if f.GetClassCode() != "SPBFUT" || futureSettlementType(f.GetFuturesType()) != "physical_delivery" || futureAssetType(f.GetAssetType()) != "security" || !strings.EqualFold(f.GetCurrency(), "rub") || !f.GetApiTradeAvailableFlag() || !f.GetBuyAvailableFlag() || !f.GetSellAvailableFlag() || !f.GetShortEnabledFlag() || f.GetLot() != 1 {
 			continue
 		}
 		expiry, last := timestamp(f.GetExpirationDate()), timestamp(f.GetLastTradeDate())

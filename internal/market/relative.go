@@ -291,7 +291,7 @@ func (p *Provider) mapRelativeFuture(ctx context.Context, f *pb.Future, c *relat
 		assetType = "security"
 		reference = "MOEX:share-delivery:" + f.GetBasicAssetPositionUid()
 	}
-	if f.GetFuturesType() != settlement || f.GetAssetType() != assetType {
+	if futureSettlementType(f.GetFuturesType()) != settlement || futureAssetType(f.GetAssetType()) != assetType {
 		return curve.Instrument{}, fmt.Errorf("future settlement/asset type differs from the selected contract specification")
 	}
 	if assetType == "security" {

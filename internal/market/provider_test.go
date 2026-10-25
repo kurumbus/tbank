@@ -60,7 +60,7 @@ func eligibleShare() *pb.Share {
 	return &pb.Share{Uid: "stock-uid", PositionUid: "stock-position", Ticker: "SBER", ClassCode: "TQBR", Lot: 10, Currency: "rub", ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true}
 }
 func eligibleFuture(now time.Time) *pb.Future {
-	return &pb.Future{Uid: "future-uid", PositionUid: "future-position", BasicAssetPositionUid: "stock-position", BasicAsset: "SBRF", Ticker: "SRZ6", ClassCode: "SPBFUT", Lot: 1, Currency: "rub", AssetType: "security", FuturesType: "physical_delivery", BasicAssetSize: quote("100"), ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.Add(20 * 24 * time.Hour)), LastTradeDate: timestamppb.New(now.Add(19 * 24 * time.Hour))}
+	return &pb.Future{Uid: "future-uid", PositionUid: "future-position", BasicAssetPositionUid: "stock-position", BasicAsset: "SBRF", Ticker: "SRZ6", ClassCode: "SPBFUT", Lot: 1, Currency: "rub", AssetType: "TYPE_SECURITY", FuturesType: "DELIVERY_TYPE_PHYSICAL_DELIVERY", BasicAssetSize: quote("100"), ApiTradeAvailableFlag: true, BuyAvailableFlag: true, SellAvailableFlag: true, ShortEnabledFlag: true, ExpirationDate: timestamppb.New(now.Add(20 * 24 * time.Hour)), LastTradeDate: timestamppb.New(now.Add(19 * 24 * time.Hour))}
 }
 
 func TestDiscoverUsesPositionUIDAndContractSize(t *testing.T) {
