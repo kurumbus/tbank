@@ -21,6 +21,9 @@ import (
 )
 
 type instrumentsReader interface {
+	Etfs(context.Context, *pb.InstrumentsRequest, ...grpc.CallOption) (*pb.EtfsResponse, error)
+	EtfBy(context.Context, *pb.InstrumentRequest, ...grpc.CallOption) (*pb.EtfResponse, error)
+	GetDividends(context.Context, *pb.GetDividendsRequest, ...grpc.CallOption) (*pb.GetDividendsResponse, error)
 	Bonds(context.Context, *pb.InstrumentsRequest, ...grpc.CallOption) (*pb.BondsResponse, error)
 	BondBy(context.Context, *pb.InstrumentRequest, ...grpc.CallOption) (*pb.BondResponse, error)
 	GetBondCoupons(context.Context, *pb.GetBondCouponsRequest, ...grpc.CallOption) (*pb.GetBondCouponsResponse, error)
@@ -49,6 +52,10 @@ type Provider struct {
 	http        *http.Client
 	feeURL      string
 	rgbiURL     string
+	fundingURL  string
+	fundURL     string
+	fxURL       string
+	fundINAVURL string
 	now         func() time.Time
 	mu          sync.Mutex
 	warnings    []string

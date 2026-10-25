@@ -14,6 +14,7 @@ import (
 
 // OpenCurvePosition freezes the domain-validated entry and its policy. Opposite
 // directions and different quantities share the same active instrument pair.
+// Cash offers instead share one active asset/event identity across term revisions.
 func (s *Store) OpenCurvePosition(ctx context.Context, runID string, candidate curve.Candidate) (curve.Position, bool, error) {
 	pairKey, err := curveCandidatePairKey(candidate)
 	if err != nil {
@@ -164,21 +165,28 @@ func (s *Store) CurveObservations(ctx context.Context, id int64) ([]CurvePositio
 // RecordCurveMark computes a valuation while holding the database writer lock.
 // A caller cannot overwrite current state using stale precomputed financials.
 func (s *Store) RecordCurveMark(ctx context.Context, runID string, id int64, snapshot curve.Snapshot) (curve.Position, bool, error) {
-	return s.writeCurveEvent(ctx, runID, id, snapshot.ObservedAt, "mark", &snapshot, "")
+	return s.writeCurveEvent(ctx, runID, id, snapshot.ObservedAt, "mark", &snapshot, nil, "")
 }
 
 func (s *Store) AwaitCurveSettlement(ctx context.Context, runID string, id int64, at time.Time) (curve.Position, bool, error) {
-	return s.writeCurveEvent(ctx, runID, id, at, "awaiting_settlement", nil, "")
+	return s.writeCurveEvent(ctx, runID, id, at, "awaiting_settlement", nil, nil, "")
 }
 
 func (s *Store) RecordCurvePositionError(ctx context.Context, runID string, id int64, at time.Time, reason string) (curve.Position, bool, error) {
 	if strings.TrimSpace(reason) == "" {
 		return curve.Position{}, false, errors.New("curve observation failure requires a reason")
 	}
-	return s.writeCurveEvent(ctx, runID, id, at, "error", nil, reason)
+	return s.writeCurveEvent(ctx, runID, id, at, "error", nil, nil, reason)
 }
 
-func (s *Store) writeCurveEvent(ctx context.Context, runID string, id int64, at time.Time, kind string, snapshot *curve.Snapshot, reason string) (curve.Position, bool, error) {
+// SettleRelativePosition accepts verified event evidence rather than computed
+// P&L. The domain validates that evidence and recomputes settlement against the
+// frozen position while holding the database writer lock.
+func (s *Store) SettleRelativePosition(ctx context.Context, runID string, id int64, input curve.RelativeSettlement) (curve.Position, bool, error) {
+	return s.writeCurveEvent(ctx, runID, id, input.ObservedAt, "settlement", nil, &input, "")
+}
+
+func (s *Store) writeCurveEvent(ctx context.Context, runID string, id int64, at time.Time, kind string, snapshot *curve.Snapshot, settlement *curve.RelativeSettlement, reason string) (curve.Position, bool, error) {
 	if id <= 0 || at.IsZero() {
 		return curve.Position{}, false, errors.New("curve observation requires position ID and timestamp")
 	}
@@ -198,7 +206,18 @@ func (s *Store) writeCurveEvent(ctx context.Context, runID string, id int64, at 
 	if source != p.Source {
 		return p, false, errors.New("curve observation source differs from entry source")
 	}
-	if p.Status == "closed" || at.UnixNano() <= lastEvent {
+	if p.Status == "closed" {
+		return p, false, nil
+	}
+	if kind == "settlement" {
+		latestValid := p.OpenedAt
+		if p.Latest != nil && p.Latest.ObservedAt.After(latestValid) {
+			latestValid = p.Latest.ObservedAt
+		}
+		if at.Before(latestValid) {
+			return p, false, nil
+		}
+	} else if at.UnixNano() <= lastEvent {
 		return p, false, nil
 	}
 	original := p
@@ -217,10 +236,27 @@ func (s *Store) writeCurveEvent(ctx context.Context, runID string, id int64, at 
 			p.CloseReason = v.CloseReason
 		}
 		payload = v
+	case "settlement":
+		if settlement == nil {
+			return p, false, errors.New("relative settlement evidence is required")
+		}
+		v, err := curve.SettleRelativePosition(p, *settlement)
+		if err != nil {
+			return p, false, fmt.Errorf("settle current relative position: %w", err)
+		}
+		if v.Kind != "settlement" || !v.ShouldClose || !v.ObservedAt.Equal(at) {
+			return p, false, errors.New("relative settlement did not produce a confirmed closing valuation")
+		}
+		p.Latest = &v
+		p.Status = "closed"
+		closedAt := settlement.PaidAt.UTC()
+		p.ClosedAt = &closedAt
+		p.CloseReason = v.CloseReason
+		payload = v
 	case "awaiting_settlement":
-		lastTrade := curve.LastTrade(p)
-		if lastTrade.IsZero() || at.Before(lastTrade) {
-			return p, false, errors.New("curve position has not reached its last trading time")
+		boundary := curve.SettlementDue(p)
+		if boundary.IsZero() || at.Before(boundary) {
+			return p, false, errors.New("position has not reached its settlement boundary")
 		}
 		p.Status = "awaiting_settlement"
 		payload = struct {
@@ -251,7 +287,11 @@ func (s *Store) writeCurveEvent(ctx context.Context, runID string, id int64, at 
 	if p.ClosedAt != nil {
 		closedAt = timestamp(*p.ClosedAt)
 	}
-	res, err := tx.conn.ExecContext(ctx, `UPDATE curve_positions SET last_event_ns=?,status=?,position_json=?,closed_at=?,version=version+1 WHERE id=? AND version=? AND last_event_ns=?`, at.UnixNano(), p.Status, string(pJSON), closedAt, id, version, lastEvent)
+	eventClock := at.UnixNano()
+	if lastEvent > eventClock {
+		eventClock = lastEvent
+	}
+	res, err := tx.conn.ExecContext(ctx, `UPDATE curve_positions SET last_event_ns=?,status=?,position_json=?,closed_at=?,version=version+1 WHERE id=? AND version=? AND last_event_ns=?`, eventClock, p.Status, string(pJSON), closedAt, id, version, lastEvent)
 	if err != nil {
 		return original, false, fmt.Errorf("update curve observation: %w", err)
 	}

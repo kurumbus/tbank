@@ -384,12 +384,15 @@ func fitObservedBond(s Snapshot, p Policy, bond Instrument) (BondCurve, decimal.
 }
 
 func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
-	if len(c.Legs) != 2 || len(exits) != 2 {
-		return c, fmt.Errorf("two matched legs required")
+	if len(c.Legs) < 1 || len(c.Legs) > 2 || len(exits) != len(c.Legs) || (len(c.Legs) == 1 && c.Strategy != CashOffer) {
+		return c, fmt.Errorf("one verified cash-offer leg or two matched legs required")
 	}
-	horizon := c.Policy.MaxHolding
+	horizon := c.Horizon
+	if horizon <= 0 {
+		horizon = c.Policy.MaxHolding
+	}
 	for _, leg := range c.Legs {
-		if leg.Instrument.Kind == "future" {
+		if leg.Instrument.Kind == "future" && !leg.Instrument.Perpetual {
 			remaining := leg.Instrument.LastTrade.Sub(c.Snapshot.ObservedAt) - c.Policy.ExpiryBuffer
 			if remaining < horizon {
 				horizon = remaining
@@ -403,8 +406,15 @@ func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
 	margin, cash, turnover := decimal.Zero, decimal.Zero, decimal.Zero
 	for n, leg := range c.Legs {
 		turnover = turnover.Add(leg.Value)
-		if leg.Instrument.Kind == "bond" {
-			cash = cash.Add(leg.Value)
+		if leg.Instrument.Kind == "bond" || leg.Instrument.Kind == "share" || leg.Instrument.Kind == "etf" {
+			if leg.Side == "buy" {
+				cash = cash.Add(leg.Value)
+			} else {
+				if !leg.Instrument.InitialMarginSell.IsPositive() {
+					return c, fmt.Errorf("verified cash-short reserve is missing")
+				}
+				margin = margin.Add(leg.Instrument.InitialMarginSell.Mul(leg.Units))
+			}
 		} else {
 			per := leg.Instrument.InitialMarginBuy
 			if leg.Side == "sell" {
@@ -412,11 +422,7 @@ func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
 			}
 			margin = margin.Add(per.Mul(decimal.NewFromInt(leg.Lots)))
 		}
-		profit := exits[n].Value.Sub(leg.Value)
-		if leg.Side == "sell" {
-			profit = profit.Neg()
-		}
-		c.ExpectedGross = c.ExpectedGross.Add(profit)
+		c.ExpectedGross = c.ExpectedGross.Add(LegProfit(leg, exits[n]))
 	}
 	profiles := scanner.Profiles()
 	base := scanner.Profiles()
@@ -449,7 +455,14 @@ func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
 			fees = append(fees, scanner.FeeLine{Name: fmt.Sprintf("exit_%d_%s", j, leg.Instrument.UID), Amount: f})
 			total = total.Add(f)
 		}
-		net := c.ExpectedGross.Sub(total).Sub(c.ExecutionReserve).Sub(c.CarryReserve)
+		for _, cost := range c.ExtraCosts[profile.Name] {
+			if cost.Amount.IsNegative() {
+				return c, fmt.Errorf("negative projected cash cost")
+			}
+			fees = append(fees, cost)
+			total = total.Add(cost.Amount)
+		}
+		net := c.ExpectedGross.Add(c.ExpectedIncome).Sub(total).Sub(c.ExecutionReserve).Sub(c.CarryReserve)
 		excess := net.Sub(c.CashBenchmark)
 		deviation := c.Metric.Value.Sub(c.Target).Abs()
 		qualifies := !c.CapitalRequired.GreaterThan(c.Policy.CapitalLimit) && !net.LessThan(c.Policy.MinProfit) && !excess.LessThan(c.Policy.MinExcessProfit) && !deviation.LessThan(c.Policy.MinDeviationBPS)
@@ -462,10 +475,27 @@ func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
 }
 
 func legFee(p scanner.Profile, l Leg) decimal.Decimal {
-	if l.Instrument.Kind == "bond" {
+	if l.Execution == "cash_offer" {
+		return decimal.Zero
+	}
+	if l.Instrument.Kind == "bond" || l.Instrument.Kind == "share" || l.Instrument.Kind == "etf" {
 		return p.StockFee(l.FeeValue)
 	}
 	return p.FutureFee(l.FeeValue, l.Lots, l.Instrument.ExchangeFee)
+}
+
+// LegProfit marks futures in raw quote units using the CURRENT conversion
+// factor. Revaluing a historic USD futures notional at a new FX rate would
+// manufacture profit even when its quoted price did not move.
+func LegProfit(entry, exit Leg) decimal.Decimal {
+	profit := exit.Value.Sub(entry.Value)
+	if entry.Instrument.Kind == "future" {
+		profit = exit.Price.Sub(entry.Price).Mul(exit.Instrument.PriceFactor).Mul(decimal.NewFromInt(entry.Instrument.Lot)).Mul(decimal.NewFromInt(entry.Lots))
+	}
+	if entry.Side == "sell" {
+		profit = profit.Neg()
+	}
+	return profit
 }
 
 func mid(s Snapshot, p Policy, i Instrument) (decimal.Decimal, error) {
@@ -485,6 +515,9 @@ func mid(s Snapshot, p Policy, i Instrument) (decimal.Decimal, error) {
 func validatedBook(s Snapshot, p Policy, i Instrument) (scanner.Book, error) {
 	if err := validInstrument(i, s.ObservedAt); err != nil {
 		return scanner.Book{}, err
+	}
+	if strings.EqualFold(i.PriceCurrency, "usd") && (!i.PriceFactorKnown || i.PriceFactorAt.IsZero() || i.PriceFactorAt.After(s.ObservedAt) || s.ObservedAt.Sub(i.PriceFactorAt) > p.MaxQuoteAge || i.PriceFactorSource == "") {
+		return scanner.Book{}, fmt.Errorf("current verified USD quote conversion is required for %s", i.Ticker)
 	}
 	b, ok := s.Books[i.UID]
 	if !ok || b.UID != i.UID || !b.Consistent || !b.TradeAvailable || b.Time.IsZero() || b.Time.After(s.ObservedAt) || s.ObservedAt.Sub(b.Time) > p.MaxQuoteAge {
@@ -506,7 +539,10 @@ func validInstrument(i Instrument, now time.Time) error {
 		}
 		return ValidateBondTerms(*i.Bond, now)
 	}
-	if i.Kind != "future" || i.Lot != 1 || i.Expiry.IsZero() || i.LastTrade.IsZero() || !i.LastTrade.After(now) || i.LastTrade.After(i.Expiry) || !i.InitialMarginBuy.IsPositive() || !i.InitialMarginSell.IsPositive() || !i.ExchangeFeeKnown || i.ExchangeFee.IsNegative() || i.ExchangeFeeSource == "" {
+	if i.Kind == "share" || i.Kind == "etf" {
+		return nil
+	}
+	if i.Kind != "future" || i.Lot != 1 || (!i.Perpetual && (i.Expiry.IsZero() || i.LastTrade.IsZero() || !i.LastTrade.After(now) || i.LastTrade.After(i.Expiry))) || !i.InitialMarginBuy.IsPositive() || !i.InitialMarginSell.IsPositive() || !i.ExchangeFeeKnown || i.ExchangeFee.IsNegative() || i.ExchangeFeeSource == "" {
 		return fmt.Errorf("unverified dated future metadata for %s", i.Ticker)
 	}
 	expected := decimal.Zero
@@ -518,7 +554,10 @@ func validInstrument(i Instrument, now time.Time) error {
 	case "RGBI":
 		expected = one
 	default:
-		return fmt.Errorf("unsupported future family")
+		if !relativeFutureFamily(i.Family) || !i.UnitSize.IsPositive() || !i.PriceFactorKnown || i.PriceFactorSource == "" || i.PriceFactorAt.IsZero() || i.PriceFactorAt.After(now) || i.SettlementReference == "" {
+			return fmt.Errorf("unsupported or unverified relative-value future family")
+		}
+		return nil
 	}
 	if !i.PriceFactor.Equal(expected) {
 		return fmt.Errorf("unexpected %s contract quote multiplier", i.Family)
@@ -531,7 +570,7 @@ func fill(s Snapshot, p Policy, i Instrument, side string, lots int64, shift dec
 	if err != nil {
 		return Leg{}, err
 	}
-	if lots <= 0 || (side != "buy" && side != "sell") || side == "buy" && !i.BuyAvailable || side == "sell" && !i.SellAvailable || side == "sell" && i.Kind == "future" && !i.ShortEnabled {
+	if lots <= 0 || (side != "buy" && side != "sell") || side == "buy" && !i.BuyAvailable || side == "sell" && !i.SellAvailable || side == "sell" && (i.Kind == "future" || i.Kind == "share" || i.Kind == "etf") && !i.ShortEnabled {
 		return Leg{}, fmt.Errorf("unavailable %s direction or quantity for %s", side, i.Ticker)
 	}
 	levels := book.Asks
@@ -569,13 +608,13 @@ func fill(s Snapshot, p Policy, i Instrument, side string, lots int64, shift dec
 	if i.Kind == "bond" {
 		value = value.Add(i.Bond.Accrued.Mul(units))
 	}
-	return Leg{Instrument: i, Side: side, Lots: lots, Units: units, Price: raw.Div(decimal.NewFromInt(lots)), Limit: limit, Value: value, FeeValue: clean}, nil
+	return Leg{Instrument: i, Side: side, Lots: lots, Units: units, Price: raw.Div(decimal.NewFromInt(lots)), Limit: limit, Value: value, FeeValue: clean, Execution: "exchange"}, nil
 }
 
 // Selling an owned futures long is a reducing trade, not an opening short.
 func closeFill(s Snapshot, p Policy, entry Leg, shift decimal.Decimal) (Leg, error) {
 	i := entry.Instrument
-	if entry.Side == "buy" && i.Kind == "future" {
+	if entry.Side == "buy" && (i.Kind == "future" || i.Kind == "share" || i.Kind == "etf") {
 		i.ShortEnabled = true
 	}
 	l, err := fill(s, p, i, opposite(entry.Side), entry.Lots, shift)

@@ -17,27 +17,36 @@ const (
 )
 
 type Instrument struct {
-	UID               string          `json:"uid"`
-	Ticker            string          `json:"ticker"`
-	ClassCode         string          `json:"class_code"`
-	Kind              string          `json:"kind"`
-	Family            string          `json:"family"`
-	Currency          string          `json:"currency"`
-	Lot               int64           `json:"lot"`
-	PriceFactor       decimal.Decimal `json:"price_factor"`
-	Expiry            time.Time       `json:"expiry,omitempty"`
-	LastTrade         time.Time       `json:"last_trade,omitempty"`
-	APIAvailable      bool            `json:"api_available"`
-	BuyAvailable      bool            `json:"buy_available"`
-	SellAvailable     bool            `json:"sell_available"`
-	ShortEnabled      bool            `json:"short_enabled"`
-	QualifiedOnly     bool            `json:"qualified_only"`
-	InitialMarginBuy  decimal.Decimal `json:"initial_margin_buy_rub"`
-	InitialMarginSell decimal.Decimal `json:"initial_margin_sell_rub"`
-	ExchangeFee       decimal.Decimal `json:"exchange_fee_rub"`
-	ExchangeFeeKnown  bool            `json:"exchange_fee_known"`
-	ExchangeFeeSource string          `json:"exchange_fee_source,omitempty"`
-	Bond              *BondTerms      `json:"bond,omitempty"`
+	UID                 string          `json:"uid"`
+	Ticker              string          `json:"ticker"`
+	ClassCode           string          `json:"class_code"`
+	Kind                string          `json:"kind"`
+	Family              string          `json:"family"`
+	Currency            string          `json:"currency"`
+	Lot                 int64           `json:"lot"`
+	PriceFactor         decimal.Decimal `json:"price_factor"`
+	UnitSize            decimal.Decimal `json:"unit_size"`
+	PriceCurrency       string          `json:"price_currency,omitempty"`
+	PriceFactorKnown    bool            `json:"price_factor_known"`
+	PriceFactorAt       time.Time       `json:"price_factor_at,omitempty"`
+	PriceFactorSource   string          `json:"price_factor_source,omitempty"`
+	Perpetual           bool            `json:"perpetual"`
+	SettlementReference string          `json:"settlement_reference,omitempty"`
+	UnderlyingUID       string          `json:"underlying_uid,omitempty"`
+	SettlementType      string          `json:"settlement_type,omitempty"`
+	Expiry              time.Time       `json:"expiry,omitempty"`
+	LastTrade           time.Time       `json:"last_trade,omitempty"`
+	APIAvailable        bool            `json:"api_available"`
+	BuyAvailable        bool            `json:"buy_available"`
+	SellAvailable       bool            `json:"sell_available"`
+	ShortEnabled        bool            `json:"short_enabled"`
+	QualifiedOnly       bool            `json:"qualified_only"`
+	InitialMarginBuy    decimal.Decimal `json:"initial_margin_buy_rub"`
+	InitialMarginSell   decimal.Decimal `json:"initial_margin_sell_rub"`
+	ExchangeFee         decimal.Decimal `json:"exchange_fee_rub"`
+	ExchangeFeeKnown    bool            `json:"exchange_fee_known"`
+	ExchangeFeeSource   string          `json:"exchange_fee_source,omitempty"`
+	Bond                *BondTerms      `json:"bond,omitempty"`
 }
 
 type RGBIReference struct {
@@ -64,6 +73,7 @@ type Snapshot struct {
 	Books         map[string]scanner.Book `json:"books"`
 	RGBIReference RGBIReference           `json:"rgbi_reference"`
 	Warnings      []string                `json:"warnings,omitempty"`
+	Relationships []Relationship          `json:"relationships,omitempty"`
 }
 
 type Leg struct {
@@ -76,6 +86,7 @@ type Leg struct {
 	Value      decimal.Decimal `json:"value_rub"`
 	FeeValue   decimal.Decimal `json:"fee_notional_rub"`
 	DV01       decimal.Decimal `json:"dv01_rub"`
+	Execution  string          `json:"execution,omitempty"`
 }
 
 type LegPreview struct {
@@ -130,30 +141,33 @@ func DefaultPolicy() Policy {
 }
 
 type Candidate struct {
-	Key               string             `json:"key"`
-	Strategy          string             `json:"strategy"`
-	Direction         string             `json:"direction"`
-	Snapshot          Snapshot           `json:"snapshot"`
-	Policy            Policy             `json:"policy"`
-	Legs              []Leg              `json:"legs"`
-	Metric            Metric             `json:"metric"`
-	Target            decimal.Decimal    `json:"target"`
-	TargetSource      string             `json:"target_source"`
-	ExpectedGross     decimal.Decimal    `json:"expected_gross_rub"`
-	CapitalRequired   decimal.Decimal    `json:"capital_required_rub"`
-	CashBenchmark     decimal.Decimal    `json:"cash_benchmark_rub"`
-	ExecutionReserve  decimal.Decimal    `json:"execution_reserve_rub"`
-	CarryReserve      decimal.Decimal    `json:"carry_reserve_rub"`
-	ResidualDV01      decimal.Decimal    `json:"residual_dv01_rub"`
-	ResidualDV01Ratio decimal.Decimal    `json:"residual_dv01_ratio"`
-	DV01Known         bool               `json:"dv01_known"`
-	HedgeMeasure      string             `json:"hedge_measure"`
-	Horizon           time.Duration      `json:"scenario_horizon"`
-	Scenarios         []scanner.Scenario `json:"scenarios"`
-	MinimumTariff     string             `json:"minimum_tariff"`
-	Warnings          []string           `json:"warnings,omitempty"`
-	Previews          []LegPreview       `json:"previews,omitempty"`
-	ReferenceUIDs     []string           `json:"reference_uids,omitempty"`
+	Key               string                       `json:"key"`
+	Strategy          string                       `json:"strategy"`
+	Direction         string                       `json:"direction"`
+	Snapshot          Snapshot                     `json:"snapshot"`
+	Policy            Policy                       `json:"policy"`
+	Legs              []Leg                        `json:"legs"`
+	Metric            Metric                       `json:"metric"`
+	Target            decimal.Decimal              `json:"target"`
+	TargetSource      string                       `json:"target_source"`
+	ExpectedGross     decimal.Decimal              `json:"expected_gross_rub"`
+	CapitalRequired   decimal.Decimal              `json:"capital_required_rub"`
+	CashBenchmark     decimal.Decimal              `json:"cash_benchmark_rub"`
+	ExecutionReserve  decimal.Decimal              `json:"execution_reserve_rub"`
+	CarryReserve      decimal.Decimal              `json:"carry_reserve_rub"`
+	ResidualDV01      decimal.Decimal              `json:"residual_dv01_rub"`
+	ResidualDV01Ratio decimal.Decimal              `json:"residual_dv01_ratio"`
+	DV01Known         bool                         `json:"dv01_known"`
+	HedgeMeasure      string                       `json:"hedge_measure"`
+	Horizon           time.Duration                `json:"scenario_horizon"`
+	Scenarios         []scanner.Scenario           `json:"scenarios"`
+	MinimumTariff     string                       `json:"minimum_tariff"`
+	Warnings          []string                     `json:"warnings,omitempty"`
+	Previews          []LegPreview                 `json:"previews,omitempty"`
+	ReferenceUIDs     []string                     `json:"reference_uids,omitempty"`
+	Relationship      *Relationship                `json:"relationship,omitempty"`
+	ExtraCosts        map[string][]scanner.FeeLine `json:"extra_costs,omitempty"`
+	ExpectedIncome    decimal.Decimal              `json:"expected_income_rub"`
 }
 
 type Scan struct {
@@ -177,18 +191,22 @@ type Position struct {
 }
 
 type Valuation struct {
-	ObservedAt       time.Time          `json:"observed_at"`
-	Kind             string             `json:"kind"`
-	Snapshot         Snapshot           `json:"snapshot"`
-	Metric           Metric             `json:"metric"`
-	Legs             []Leg              `json:"legs"`
-	GrossProfit      decimal.Decimal    `json:"gross_profit_rub"`
-	CouponIncome     decimal.Decimal    `json:"coupon_income_rub"`
-	CashBenchmark    decimal.Decimal    `json:"cash_benchmark_rub"`
-	ExecutionReserve decimal.Decimal    `json:"execution_reserve_rub"`
-	CarryReserve     decimal.Decimal    `json:"carry_reserve_rub"`
-	Scenarios        []scanner.Scenario `json:"scenarios"`
-	ShouldClose      bool               `json:"should_close"`
-	CloseReason      string             `json:"close_reason,omitempty"`
-	Warnings         []string           `json:"warnings,omitempty"`
+	ObservedAt       time.Time           `json:"observed_at"`
+	Kind             string              `json:"kind"`
+	Snapshot         Snapshot            `json:"snapshot"`
+	Metric           Metric              `json:"metric"`
+	Legs             []Leg               `json:"legs"`
+	LegProfits       []decimal.Decimal   `json:"leg_profits_rub,omitempty"`
+	GrossProfit      decimal.Decimal     `json:"gross_profit_rub"`
+	CouponIncome     decimal.Decimal     `json:"coupon_income_rub"`
+	CashIncome       decimal.Decimal     `json:"cash_income_rub"`
+	FundingIncome    decimal.Decimal     `json:"funding_income_rub"`
+	Settlement       *RelativeSettlement `json:"settlement,omitempty"`
+	CashBenchmark    decimal.Decimal     `json:"cash_benchmark_rub"`
+	ExecutionReserve decimal.Decimal     `json:"execution_reserve_rub"`
+	CarryReserve     decimal.Decimal     `json:"carry_reserve_rub"`
+	Scenarios        []scanner.Scenario  `json:"scenarios"`
+	ShouldClose      bool                `json:"should_close"`
+	CloseReason      string              `json:"close_reason,omitempty"`
+	Warnings         []string            `json:"warnings,omitempty"`
 }

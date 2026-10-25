@@ -56,6 +56,25 @@ func TestCurveOpeningMessageShowsScenarioNotRealizedProfit(t *testing.T) {
 	}
 }
 
+func TestRelativeAlertsDistinguishCashIncomeFundingAndOneLegOffer(t *testing.T) {
+	p := curvePositionForMessage(curve.CashOffer)
+	p.Entry.Legs = p.Entry.Legs[:1]
+	p.Entry.Legs[0].Instrument.Ticker = "UGLD"
+	p.Entry.HedgeMeasure = "unhedged_event_risk"
+	p.Latest = &curve.Valuation{ObservedAt: p.OpenedAt.Add(time.Hour), CashIncome: decimal.NewFromInt(7), FundingIncome: decimal.NewFromInt(-3), Scenarios: p.Entry.Scenarios}
+	text := FormatCurvePositionMessage("fixture", p)
+	for _, want := range []string{"relative-value position #7", "Mandatory cash offer", "Entry BUY UGLD", "coupons/distributions: 7.00 RUB", "funding: -3.00 RUB", "Current executable-close estimate"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("missing %q in %s", want, text)
+		}
+	}
+	for _, absent := range []string{"Historical baseline minimum", "Absolute DV01 unavailable", "Entry SELL", "Realized mock-close P&L"} {
+		if strings.Contains(text, absent) {
+			t.Errorf("inapplicable %q in cash-offer message", absent)
+		}
+	}
+}
+
 func TestCurveCurrentAndClosedPnLStaySeparateFromEntryProjection(t *testing.T) {
 	p := curvePositionForMessage(curve.RUONIACalendar)
 	p.Latest = &curve.Valuation{ObservedAt: p.OpenedAt.Add(time.Hour), Kind: "mark", Metric: curve.Metric{Value: decimal.RequireFromString("0.5"), Unit: "percentage_points"}, CashBenchmark: decimal.NewFromInt(5), Scenarios: []scanner.Scenario{{Profile: "investor", NetProfit: decimal.NewFromInt(80), ExcessProfit: decimal.NewFromInt(75)}, {Profile: "trader", NetProfit: decimal.NewFromInt(100), ExcessProfit: decimal.NewFromInt(95)}, {Profile: "premium", NetProfit: decimal.NewFromInt(110), ExcessProfit: decimal.NewFromInt(105)}}}
