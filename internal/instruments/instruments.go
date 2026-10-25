@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	pb "opensource.tbank.ru/invest/invest-go/proto"
 )
@@ -45,6 +47,17 @@ type Summary struct {
 	ShortEnabled      *bool  `json:"short_enabled,omitempty"`
 	ForQualified      *bool  `json:"for_qualified_investor,omitempty"`
 	MinPriceIncrement string `json:"min_price_increment,omitempty"`
+	// Futures catalogue metadata is kept verbatim for discovery diagnostics.
+	// These fields are absent on generic search/info responses and other kinds.
+	FuturesType             string `json:"futures_type,omitempty"`
+	AssetType               string `json:"asset_type,omitempty"`
+	BasicAsset              string `json:"basic_asset,omitempty"`
+	BasicAssetSize          string `json:"basic_asset_size,omitempty"`
+	BasicAssetPositionUID   string `json:"basic_asset_position_uid,omitempty"`
+	MinPriceIncrementAmount string `json:"min_price_increment_amount,omitempty"`
+	FirstTradeDate          string `json:"first_trade_date,omitempty"`
+	LastTradeDate           string `json:"last_trade_date,omitempty"`
+	ExpirationDate          string `json:"expiration_date,omitempty"`
 }
 
 // Result is a filtered page of instruments plus the pre-limit match count.
@@ -367,9 +380,39 @@ func mapListed[T listed](kind string, items []T) []Summary {
 		if identified, ok := any(item).(withISIN); ok {
 			card.ISIN = identified.GetIsin()
 		}
+		if future, ok := any(item).(*pb.Future); ok {
+			card.FuturesType = future.GetFuturesType()
+			card.AssetType = future.GetAssetType()
+			card.BasicAsset = future.GetBasicAsset()
+			card.BasicAssetSize = formatFutureQuotation(future.GetBasicAssetSize())
+			card.BasicAssetPositionUID = future.GetBasicAssetPositionUid()
+			card.MinPriceIncrementAmount = formatFutureQuotation(future.GetMinPriceIncrementAmount())
+			card.FirstTradeDate = formatFutureTimestamp(future.GetFirstTradeDate())
+			card.LastTradeDate = formatFutureTimestamp(future.GetLastTradeDate())
+			card.ExpirationDate = formatFutureTimestamp(future.GetExpirationDate())
+		}
 		out = append(out, card)
 	}
 	return out
+}
+
+func formatFutureQuotation(q *pb.Quotation) string {
+	if q == nil {
+		return ""
+	}
+	return decimal.NewFromInt(q.GetUnits()).Add(decimal.New(int64(q.GetNano()), -9)).String()
+}
+
+func formatFutureTimestamp(ts *timestamppb.Timestamp) string {
+	if ts == nil {
+		return ""
+	}
+	if ts.CheckValid() != nil {
+		// Invalid upstream dates are diagnostic evidence; do not normalize them
+		// into apparently valid dates or make them indistinguishable from nil.
+		return fmt.Sprintf("invalid(seconds=%d,nanos=%d)", ts.GetSeconds(), ts.GetNanos())
+	}
+	return ts.AsTime().UTC().Format(time.RFC3339Nano)
 }
 
 func fromOption(opt *pb.Option) Summary {

@@ -12,6 +12,18 @@ import (
 
 func modelDecimal(s string) decimal.Decimal { return decimal.RequireFromString(s) }
 
+func TestCurveExplainsContractsRemovedByExpiryBuffer(t *testing.T) {
+	s, p := modelCalendar("RGBI"), modelPolicy()
+	for n := range s.Instruments {
+		s.Instruments[n].LastTrade = s.ObservedAt.Add(p.ExpiryBuffer)
+	}
+	out, err := Evaluate(s, p, nil)
+	skips := strings.Join(out.Skips, "\n")
+	if err != nil || len(out.Metrics) != 0 || !strings.Contains(skips, "RGBI calendar: 0 contracts remain after") || !strings.Contains(skips, "OFZ/RGBI: no RGBI hedge remains") {
+		t.Fatal("expiry-buffer exclusions remained silent", err, skips)
+	}
+}
+
 func modelPolicy() Policy {
 	p := DefaultPolicy()
 	p.FutureContracts = 10

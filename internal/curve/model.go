@@ -48,6 +48,9 @@ func Evaluate(s Snapshot, p Policy, history []Metric) (Scan, error) {
 	}
 	for _, family := range []string{"KEYRATE", "RUONIA", "RGBI"} {
 		futures := familyFutures(s, family, p.ExpiryBuffer)
+		if len(futures) < 2 {
+			out.Skips = append(out.Skips, fmt.Sprintf("%s calendar: %d contracts remain after the %s expiry buffer; at least two are required", family, len(futures), p.ExpiryBuffer))
+		}
 		for n := 0; n+1 < len(futures); n++ {
 			near, far := futures[n], futures[n+1]
 			m, err := calendarMetric(s, p, near, far)
@@ -72,6 +75,9 @@ func Evaluate(s Snapshot, p Policy, history []Metric) (Scan, error) {
 		}
 	}
 	hedges := familyFutures(s, "RGBI", p.ExpiryBuffer)
+	if len(hedges) == 0 {
+		out.Skips = append(out.Skips, "OFZ/RGBI: no RGBI hedge remains after the expiry buffer")
+	}
 	if len(hedges) > 0 {
 		for _, bond := range s.Instruments {
 			if bond.Kind != "bond" || bond.Family != "OFZ" {

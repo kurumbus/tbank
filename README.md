@@ -78,6 +78,18 @@ Cash offers are marked at executable exchange bids before the verified broker cu
 
 The input fields are `observed_at`, `instrument_uid`, `accepted_at`, `accepted_units`, `paid_at`, `gross_proceeds_rub`, `terminal_fee_rub`, `fee_known`, `net_distributions_rub`, `distributions_known`, `verified`, and `reference`. Acceptance must satisfy the saved terms; the full quantity and payment must reconcile. Partial acceptance is rejected. A tender charges its verified terminal fee instead of an invented exchange-sale commission. Payment time ends the capital charge; later confirmation remains in the audit history.
 
+## Diagnosing empty futures scans
+
+`curve-scan` and `relative-scan` include per-family discovery counts in `scan.skips`: catalogue size, recognized metadata matches, ticker-only hints, and selected contracts. Rejections include the failing rule and up to two metadata examples per reason, capped at eight reasons per selector. Ticker hints only explain potential catalogue mismatches; they do not qualify a contract. Pairing failures report expiry, fixing or underlying mismatches. Curve output also reports contracts excluded by the configured expiry buffer.
+
+To preserve the current BASE catalogue used by discovery, including raw future types, underlying identifiers, contract size and dates:
+
+```sh
+./bin/tbank list -kind futures -limit 0 -json > futures-diagnostics.json
+```
+
+The full `export` command includes these fields too, but uses the ALL catalogue. A closed or stale book is checked after contract discovery; an empty discovery result needs its own metadata diagnosis. Successful authentication alone does not verify the scanner's contract mappings.
+
 ## Build and offline demonstrations
 
 Requires Go 1.24 or later. SQLite is embedded and pure Go.

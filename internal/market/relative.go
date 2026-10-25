@@ -21,6 +21,8 @@ type relativeCatalogue struct {
 	fees              map[string]decimal.Decimal
 	loaded            map[string]curve.Instrument
 	trackedUnderlying map[string]string
+	diagnostics       []string
+	diagnosed         map[string]bool
 }
 
 // RelativeSnapshot resolves configured economic relationships to immutable
@@ -71,7 +73,7 @@ func (p *Provider) RelativeSnapshot(ctx context.Context, selection curve.Relativ
 		result.Warnings = append(result.Warnings, "relative futures catalogue: "+e.Error())
 	} else {
 		for _, f := range futures.GetInstruments() {
-			if f != nil && f.GetClassCode() == "SPBFUT" {
+			if f != nil {
 				catalogue.futures[f.GetUid()] = f
 			}
 		}
@@ -90,6 +92,7 @@ func (p *Provider) RelativeSnapshot(ctx context.Context, selection curve.Relativ
 		}
 		result.Relationships = append(result.Relationships, resolved...)
 	}
+	result.Warnings = append(result.Warnings, catalogue.diagnostics...)
 	// Refresh every saved UID independently of the configurable discovery list.
 	for _, saved := range selection.Tracked {
 		current, e := p.loadRelativeTracked(ctx, saved, &catalogue, now)
