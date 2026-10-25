@@ -244,19 +244,11 @@ func (p *Provider) RelativeSnapshot(ctx context.Context, selection curve.Relativ
 }
 
 func relativeProduct(f *pb.Future) string {
-	if f == nil {
+	product := futureProduct(f)
+	if curveFamily(product) {
 		return ""
 	}
-	// BasicAsset, settlement type, asset type and live unit metadata accompany
-	// every product selection. Display-name/ticker substrings alone never qualify.
-	if f.GetTicker() == "CNYRUBF" && (f.GetBasicAsset() == "CNYRUBF" || f.GetBasicAsset() == "CNYRUBTOM" || f.GetBasicAsset() == "CNYRUB") {
-		return "CNYRUBF"
-	}
-	if f.GetTicker() == "GLDRUBF" && (f.GetBasicAsset() == "GLDRUBF" || f.GetBasicAsset() == "GLDRUBTOM" || f.GetBasicAsset() == "GLDRUB") {
-		return "GLDRUBF"
-	}
-	products := map[string]string{"MIX": "MX", "MX": "MX", "MXI": "MM", "MM": "MM", "Si": "Si", "SI": "Si", "USDM": "USDM", "GOLD": "GOLD", "GOLDM": "GOLDM", "CNY": "CR", "CNYRUB": "CR", "GL": "GL", "GLDRUB": "GL", "SBRF": "SBER", "SBER": "SBER", "SBPR": "SBERP", "SBERP": "SBERP", "TATN": "TATN", "TATP": "TATNP", "TATNP": "TATNP"}
-	return products[f.GetBasicAsset()]
+	return product
 }
 
 func (p *Provider) mapRelativeFuture(ctx context.Context, f *pb.Future, c *relativeCatalogue, now time.Time) (curve.Instrument, error) {
@@ -265,7 +257,7 @@ func (p *Provider) mapRelativeFuture(ctx context.Context, f *pb.Future, c *relat
 	}
 	product := relativeProduct(f)
 	if product == "" {
-		return curve.Instrument{}, fmt.Errorf("unrecognized underlying basic asset %q", f.GetBasicAsset())
+		return curve.Instrument{}, fmt.Errorf("unsupported ticker/basic_asset combination %q/%q", f.GetTicker(), f.GetBasicAsset())
 	}
 	perpetual := product == "CNYRUBF" || product == "GLDRUBF"
 	expiry, last := timestamp(f.GetExpirationDate()), timestamp(f.GetLastTradeDate())

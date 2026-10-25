@@ -83,13 +83,13 @@ func (p *Provider) CurveSnapshot(ctx context.Context, selection curve.Selection)
 			diagnostic := futureDiscovery{selector: family, catalogue: len(futures.GetInstruments())}
 			var values []*pb.Future
 			for _, future := range futures.GetInstruments() {
-				if future != nil && (future.GetBasicAsset() == family || futureTickerHint(future.GetTicker(), family)) {
+				if future != nil && futureTickerHint(future.GetTicker(), family) {
 					values = append(values, future)
 				}
 			}
 			sortFutureChoices(values)
 			for _, future := range values {
-				if future.GetBasicAsset() != family {
+				if curveFutureFamily(future) != family {
 					diagnostic.tickerOnly++
 					diagnostic.reject(future, "ticker hint matches but basic_asset does not identify the selected family")
 					continue
@@ -216,7 +216,8 @@ func curveFamily(family string) bool {
 }
 
 func (p *Provider) mapCurveFuture(ctx context.Context, f *pb.Future, fees map[string]decimal.Decimal) (curve.Instrument, error) {
-	if f == nil || f.GetUid() == "" || !curveFamily(f.GetBasicAsset()) || f.GetClassCode() != "SPBFUT" || !strings.EqualFold(f.GetCurrency(), "rub") || f.GetLot() != 1 || futureSettlementType(f.GetFuturesType()) != "cash_settlement" || futureAssetType(f.GetAssetType()) != "index" {
+	family := curveFutureFamily(f)
+	if f == nil || f.GetUid() == "" || family == "" || f.GetClassCode() != "SPBFUT" || !strings.EqualFold(f.GetCurrency(), "rub") || f.GetLot() != 1 || futureSettlementType(f.GetFuturesType()) != "cash_settlement" || futureAssetType(f.GetAssetType()) != "index" {
 		return curve.Instrument{}, fmt.Errorf("unsupported dated cash-settled curve contract")
 	}
 	expiry, last := timestamp(f.GetExpirationDate()), timestamp(f.GetLastTradeDate())
@@ -233,7 +234,7 @@ func (p *Provider) mapCurveFuture(ctx context.Context, f *pb.Future, fees map[st
 		return curve.Instrument{}, fmt.Errorf("current positive RUB margins and quote multiplier are required")
 	}
 	fee, known := fees[f.GetTicker()]
-	return curve.Instrument{UID: f.GetUid(), Ticker: f.GetTicker(), ClassCode: f.GetClassCode(), Kind: "future", Family: f.GetBasicAsset(), Currency: "rub", Lot: 1, PriceFactor: amount.Div(step), Expiry: expiry, LastTrade: last, APIAvailable: f.GetApiTradeAvailableFlag(), BuyAvailable: f.GetBuyAvailableFlag(), SellAvailable: f.GetSellAvailableFlag(), ShortEnabled: f.GetShortEnabledFlag(), QualifiedOnly: f.GetForQualInvestorFlag(), InitialMarginBuy: money(buy), InitialMarginSell: money(sell), ExchangeFee: fee, ExchangeFeeKnown: known, ExchangeFeeSource: p.feeURL}, nil
+	return curve.Instrument{UID: f.GetUid(), Ticker: f.GetTicker(), ClassCode: f.GetClassCode(), Kind: "future", Family: family, Currency: "rub", Lot: 1, PriceFactor: amount.Div(step), Expiry: expiry, LastTrade: last, APIAvailable: f.GetApiTradeAvailableFlag(), BuyAvailable: f.GetBuyAvailableFlag(), SellAvailable: f.GetSellAvailableFlag(), ShortEnabled: f.GetShortEnabledFlag(), QualifiedOnly: f.GetForQualInvestorFlag(), InitialMarginBuy: money(buy), InitialMarginSell: money(sell), ExchangeFee: fee, ExchangeFeeKnown: known, ExchangeFeeSource: p.feeURL}, nil
 }
 
 func (p *Provider) loadCurveBond(ctx context.Context, uid string, now time.Time) (curve.Instrument, error) {

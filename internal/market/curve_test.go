@@ -225,16 +225,21 @@ func TestCurveTrackedUIDSurvivesDiscoveryAndClearsUnavailableFee(t *testing.T) {
 
 func TestCurveFutureSelectionTakesNearestValidContracts(t *testing.T) {
 	p, f, _, now := newCurveProvider(t)
-	for _, days := range []int{90, 10, 30, 60} {
-		f.futures = append(f.futures, curveFutureFixture(now, fmt.Sprintf("K%d", days), "KEYRATE", days))
+	for n, days := range []int{90, 10, 30, 60} {
+		future := curveFutureFixture(now, fmt.Sprintf("K%d", days), "KEYRATE", days)
+		future.Ticker = []string{"KKF7", "KKX6", "KKZ6", "KKG7"}[n]
+		f.futures = append(f.futures, future)
 	}
 	bad := curveFutureFixture(now, "wrongdelivery", "KEYRATE", 5)
+	bad.Ticker = "KKV6"
 	bad.FuturesType = "physical_delivery"
 	f.futures = append(f.futures, bad)
 	notStarted := curveFutureFixture(now, "notstarted", "KEYRATE", 6)
+	notStarted.Ticker = "KKJ7"
 	notStarted.FirstTradeDate = timestamppb.New(now.Add(time.Hour))
 	f.futures = append(f.futures, notStarted)
 	lastTradeNow := curveFutureFixture(now, "endednow", "KEYRATE", 7)
+	lastTradeNow.Ticker = "KKU6"
 	lastTradeNow.LastTradeDate = timestamppb.New(now)
 	f.futures = append(f.futures, lastTradeNow)
 	selection := curveSelect()
