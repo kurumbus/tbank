@@ -33,6 +33,11 @@ func NewPosition(entry Candidate, source string) (Position, error) {
 	if err := validateEntry(entry); err != nil {
 		return Position{}, err
 	}
+	for _, leg := range entry.Legs {
+		if _, err := positionCoupons(leg, entry.Snapshot.ObservedAt, entry.Snapshot.ObservedAt); err != nil {
+			return Position{}, err
+		}
+	}
 	frozen, err := clonePositionJSON(entry)
 	if err != nil {
 		return Position{}, err
@@ -179,8 +184,11 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 }
 
 func validateEntry(c Candidate) error {
-	if c.Snapshot.ObservedAt.IsZero() || len(c.Legs) != 2 || !c.CapitalRequired.IsPositive() || c.ExecutionReserve.IsNegative() || c.Key == "" {
+	if c.Snapshot.ObservedAt.IsZero() || len(c.Legs) != 2 || !c.CapitalRequired.IsPositive() || c.CapitalRequired.GreaterThan(c.Policy.CapitalLimit) || c.ExecutionReserve.IsNegative() || c.Key == "" {
 		return fmt.Errorf("invalid frozen position entry")
+	}
+	if c.Strategy != OFZRGBI && c.Strategy != KEYRATECalendar && c.Strategy != RUONIACalendar && c.Strategy != RGBICalendar {
+		return fmt.Errorf("unsupported position strategy")
 	}
 	if c.MinimumTariff != "investor" && c.MinimumTariff != "trader" && c.MinimumTariff != "premium" {
 		return fmt.Errorf("qualified minimum tariff is required")
@@ -188,6 +196,7 @@ func validateEntry(c Candidate) error {
 	if len(c.Scenarios) != 3 {
 		return fmt.Errorf("exactly three entry tariff scenarios are required")
 	}
+	minimum := ""
 	for _, name := range []string{"investor", "trader", "premium"} {
 		if _, err := positionEntryFees(c, name); err != nil {
 			return err
@@ -196,7 +205,13 @@ func validateEntry(c Candidate) error {
 			if scenario.Profile == name && (!scenario.StockRate.IsPositive() || !scenario.FutureRate.IsPositive() || strings.TrimSpace(scenario.FeeSource) == "" || (name == c.MinimumTariff && (!scenario.Qualifies || scenario.NetProfit.LessThan(c.Policy.MinProfit) || scenario.ExcessProfit.LessThan(c.Policy.MinExcessProfit)))) {
 				return fmt.Errorf("invalid or ineligible frozen tariff %s", name)
 			}
+			if scenario.Profile == name && scenario.Qualifies && minimum == "" {
+				minimum = name
+			}
 		}
+	}
+	if minimum != c.MinimumTariff {
+		return fmt.Errorf("entry minimum tariff differs from least eligible scenario")
 	}
 	for n, l := range c.Legs {
 		if l.Instrument.UID == "" || l.Lots <= 0 || !l.Units.IsPositive() || !l.Value.IsPositive() || !l.FeeValue.IsPositive() || (l.Side != "buy" && l.Side != "sell") || (n > 0 && l.Instrument.UID == c.Legs[0].Instrument.UID) {
@@ -274,6 +289,23 @@ func samePositionInstrument(a, b Instrument) error {
 	}
 	if a.Kind == "bond" && (a.Bond == nil || b.Bond == nil || !a.Bond.Nominal.Equal(b.Bond.Nominal) || !a.Bond.Maturity.Equal(b.Bond.Maturity) || a.Bond.FixedCoupon != b.Bond.FixedCoupon || a.Bond.Floating != b.Bond.Floating || a.Bond.Indexed != b.Bond.Indexed || a.Bond.Amortizing != b.Bond.Amortizing) {
 		return fmt.Errorf("observation changes frozen bond terms %s", a.UID)
+	}
+	if a.Kind == "bond" {
+		for _, frozen := range a.Bond.Cashflows {
+			if positionCouponDate(frozen.Date).Before(positionCouponDate(b.Bond.AccruedAt)) {
+				continue // Providers may omit already-paid historical flows.
+			}
+			found := false
+			for _, current := range b.Bond.Cashflows {
+				if current.Kind == frozen.Kind && positionCouponDate(current.Date).Equal(positionCouponDate(frozen.Date)) && current.Amount.Equal(frozen.Amount) && (frozen.RecordDate.IsZero() || positionCouponDate(current.RecordDate).Equal(positionCouponDate(frozen.RecordDate))) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("observation changes frozen bond cashflow %s on %s", a.UID, frozen.Date.Format("2006-01-02"))
+			}
+		}
 	}
 	return nil
 }
