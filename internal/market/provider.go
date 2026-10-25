@@ -21,6 +21,9 @@ import (
 )
 
 type instrumentsReader interface {
+	Bonds(context.Context, *pb.InstrumentsRequest, ...grpc.CallOption) (*pb.BondsResponse, error)
+	BondBy(context.Context, *pb.InstrumentRequest, ...grpc.CallOption) (*pb.BondResponse, error)
+	GetBondCoupons(context.Context, *pb.GetBondCouponsRequest, ...grpc.CallOption) (*pb.GetBondCouponsResponse, error)
 	Shares(context.Context, *pb.InstrumentsRequest, ...grpc.CallOption) (*pb.SharesResponse, error)
 	Futures(context.Context, *pb.InstrumentsRequest, ...grpc.CallOption) (*pb.FuturesResponse, error)
 	ShareBy(context.Context, *pb.InstrumentRequest, ...grpc.CallOption) (*pb.ShareResponse, error)
@@ -45,6 +48,7 @@ type Provider struct {
 	prices      priceReader
 	http        *http.Client
 	feeURL      string
+	rgbiURL     string
 	now         func() time.Time
 	mu          sync.Mutex
 	warnings    []string
@@ -58,7 +62,7 @@ func New(api *investgo.Client) *Provider {
 		data:        pb.NewMarketDataServiceClient(api.Conn),
 		users:       pb.NewUsersServiceClient(api.Conn),
 		prices:      pb.NewOrdersServiceClient(api.Conn),
-		http:        &http.Client{Timeout: 10 * time.Second}, feeURL: moexFeeURL, now: time.Now,
+		http:        &http.Client{Timeout: 10 * time.Second}, feeURL: moexFeeURL, rgbiURL: moexRGBIHistoryURL, now: time.Now,
 	}
 }
 
