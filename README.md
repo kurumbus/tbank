@@ -234,6 +234,55 @@ This is a schema illustration, not market data. Prices use the instruments' raw 
 
 SQLite stores runs, stock and curve positions, historical curve metrics, observations and notification state. Entries remain immutable; observations record marks and transitions. Existing `mock_records` remain audit-only and are not promoted into managed positions. Production, sandbox and fixtures use separate databases. Keep `var/` on persistent disk and back it up if this history matters.
 
+## Continuous operation and contract rollover
+
+Run all three scanners repeatedly against the same persistent state database. Each cycle collects valid observations, evaluates new signals and revisits existing paper positions. Missing or stale books produce skips; only valid observations contribute to historical baselines. The configured 30-observation/24-hour warm-up applies per pair/model to strategies using historical targets, so hourly collection can require several trading sessions.
+
+Each live scan refreshes the instrument catalogue and discovers eligible contracts within its configured horizon and selection limit. Later listed contracts become eligible automatically as earlier contracts expire; there is no monthly ticker edit. Discovery follows the available contract dates rather than assuming every calendar month has a contract. Existing paper positions retain their original instruments and quantities and continue to be tracked by UID; discovery does not roll an existing position into another expiry. A new pair used by a strategy with a historical target must establish its own baseline.
+
+Pulling or building the repository does not start a background process or install a schedule. Choose the Windows foreground loop below for an initial test, or install Linux cron for unattended hourly operation.
+
+## Windows build and hourly test
+
+Install Go 1.24 or later. Open PowerShell in the repository root, alongside `.env`, `config/` and `go.mod`. Use the same working directory on every run so the program loads the intended settings and keeps its history. SQLite is embedded; no separate database server is required.
+
+Build the native executable:
+
+```powershell
+go build -o .\bin\tbank.exe .\cmd\tbank
+```
+
+After a successful build, run one pass during an open session:
+
+```powershell
+.\bin\tbank.exe scan
+.\bin\tbank.exe curve-scan
+.\bin\tbank.exe relative-scan
+```
+
+For repeated testing, start this loop instead:
+
+```powershell
+while ($true) {
+    foreach ($scan in @("scan", "curve-scan", "relative-scan")) {
+        & .\bin\tbank.exe $scan
+    }
+    Start-Sleep -Seconds 3600
+}
+```
+
+The loop runs immediately, executes the scans sequentially, then pauses for one hour after each cycle. It does not align runs to the top of the hour. Keep the terminal open and the PC awake; press **Ctrl+C** to stop. Run only one copy, and stop it before running another scan manually: this basic loop has no inter-process lock. Each scanner retains its configured API timeout.
+
+To send Telegram notifications, configure `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env`, then change the command inside the loop to:
+
+```powershell
+& .\bin\tbank.exe $scan -notify
+```
+
+With the supplied state paths and the sandbox endpoint, all three scans retain their history and paper positions in `var/scanner.sqlite.sandbox`. Keep that database between runs. No positions or observations are transferred automatically when switching to a different state path or to production.
+
+For a later unattended Windows setup, Task Scheduler can launch a single pass of all three scans every hour. Set its working directory to the repository root and configure it not to start a new instance while a previous one is running. Schedule a single pass, not the infinite test loop. The Linux `deploy/run-hourly.sh` wrapper uses `sh`, `flock` and `timeout` and is not a native PowerShell script.
+
 ## Hourly Linux cron
 
 Install at `/opt/tbank`, build there and configure `.env`. Run as the account owning the checkout and state. `flock` and `timeout` are standard Linux utilities.
