@@ -218,7 +218,12 @@ func cmdScan(args []string) error {
 	if err = enc.Encode(report); err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "scan %s: %d evaluated, %d skipped, %d opened, %d marked, %d closed, %d awaiting settlement, %d notifications\n", source, len(report.Results), len(report.Skipped), report.PositionsOpened, report.PositionsMarked, report.PositionsClosed, report.PositionsAwaiting, report.Notifications)
+	open, awaiting := positionActivity(scanStatuses(report.Positions))
+	result, first := "ok", ""
+	if len(report.Errors) > 0 {
+		result, first = "error", report.Errors[0]
+	}
+	recordHeartbeat("scan", source, result, fmt.Sprintf("evaluated=%d skipped=%d opened=%d marked=%d closed=%d awaiting=%d notifications=%d open=%d held_awaiting=%d errors=%d", len(report.Results), len(report.Skipped), report.PositionsOpened, report.PositionsMarked, report.PositionsClosed, report.PositionsAwaiting, report.Notifications, open, awaiting, len(report.Errors)), first)
 	if len(report.Errors) > 0 {
 		return fmt.Errorf("scan completed with %d operational errors; inspect the JSON report", len(report.Errors))
 	}

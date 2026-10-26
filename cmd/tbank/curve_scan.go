@@ -171,7 +171,18 @@ func cmdValueScan(args []string, relative bool) error {
 		return err
 	}
 	last := reports[len(reports)-1]
-	fmt.Fprintf(os.Stderr, "%s %s: %d metrics, %d candidates, %d opened, %d marked, %d closed, %d awaiting settlement\n", name, source, len(last.Scan.Metrics), len(last.Scan.Candidates), last.Opened, last.Marked, last.Closed, last.Awaiting)
+	open, awaiting := positionActivity(curveStatuses(last.Positions))
+	result, first := "ok", ""
+	if failures > 0 {
+		result = "error"
+		for _, report := range reports {
+			if len(report.Errors) > 0 {
+				first = report.Errors[0]
+				break
+			}
+		}
+	}
+	recordHeartbeat(name, source, result, fmt.Sprintf("metrics=%d candidates=%d opened=%d marked=%d closed=%d awaiting=%d notifications=%d open=%d held_awaiting=%d errors=%d", len(last.Scan.Metrics), len(last.Scan.Candidates), last.Opened, last.Marked, last.Closed, last.Awaiting, last.Notifications, open, awaiting, failures), first)
 	if failures > 0 {
 		return fmt.Errorf("curve scan completed with %d operational errors; inspect JSON report", failures)
 	}

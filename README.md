@@ -277,7 +277,7 @@ To send Telegram notifications, configure `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHA
 & .\bin\tbank.exe $scan -notify
 ```
 
-With the supplied state paths and the sandbox endpoint, all three scans retain their history and paper positions in `var/scanner.sqlite.sandbox`. Keep that database between runs. No positions or observations are transferred automatically when switching to a different state path or to production.
+With the supplied state paths and the sandbox endpoint, all three scans retain their history and paper positions in `var/scanner.sqlite.sandbox`. Keep that database between runs. No positions or observations are transferred automatically when switching to a different state path or to production. Each live scan appends one line to `var/heartbeat.log` with the pass counts, including a pass that sent no Telegram messages.
 
 For a later unattended Windows setup, Task Scheduler can launch a single pass of all three scans every hour. Set its working directory to the repository root and configure it not to start a new instance while a previous one is running. Schedule a single pass, not the infinite test loop. The Linux `deploy/run-hourly.sh` wrapper uses `sh`, `flock` and `timeout` and is not a native PowerShell script.
 
