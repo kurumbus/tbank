@@ -179,18 +179,18 @@ The supplied KEYRATE fixture contains 32 invented snapshots covering baseline wa
 | `alert_cooldown_minutes`, `alert_improvement_rub` | 1,440 minutes and RUB 100 for repeated-alert suppression. |
 | `policy.bond_lots`, `future_contracts` | 100 bond lots and a one-contract starting scale. The hedge is sized and checked for residual sensitivity; a one-contract configuration does not imply one contract on every leg. |
 | `policy.capital_limit_rub` | RUB 1,000,000 per independent candidate, not a shared portfolio balance. |
-| `policy.cash_rate_annual` | `0.15`, the illustrative annual cash alternative applied to required funded capital. |
+| `policy.cash_rate_annual` | Present in the file and not applied. Curve and relative results do not subtract an alternative cash yield. |
 | `policy.margin_buffer_rate`, `execution_buffer_bps` | `0.5` extra initial-margin reserve and a 10 bp execution-cost reserve. |
 | `policy.carry_uncertainty_annual` | `0.05`, an annual reserve for uncertain carry over the modeled holding period. |
 | `policy.assumed_prior_future_turnover_rub` | `0`; an entry-fee scenario assumption, not a fetched account turnover. |
-| `policy.min_profit_rub`, `min_excess_profit_rub`, `min_deviation_bps` | RUB 100 net profit, RUB 100 excess over cash and 5 bp minimum metric deviation. |
+| `policy.min_profit_rub`, `min_excess_profit_rub`, `min_deviation_bps` | RUB 100 net profit and 5 bp minimum metric deviation. The excess hurdle compares the same net; no cash yield is deducted. |
 | `policy.max_residual_dv01_ratio`, `allow_duration_proxy` | `0.10` residual-sensitivity limit; `false` for opening OFZ/RGBI with the aggregate duration proxy. |
 | `policy.min_peers`, `max_curve_rmse_fraction`, `max_curve_error_fraction` | 4 peers; 0.5% RMS and 1% maximum relative bond-price fitting error. |
 | `policy.min_history`, `min_history_span`, `history_max_age` | 30 prior observations, at least 24 hours apart overall, using at most 720-hour-old history. |
 | `policy.max_quote_age`, `max_quote_skew`, `max_reference_age` | 30-second books, 5-second cross-leg skew and a 96-hour maximum RGBI risk-reference age. |
 | `policy.max_holding`, `expiry_buffer` | `336h` maximum hold and `24h` before the earliest last-trading time. |
 
-Curve capital includes the cash-funded bond purchase where applicable, each futures leg's applicable initial margin, the margin reserve and entry charges. Costs include entry and estimated exit fees for all three tariff families, execution/carry reserves and the cash benchmark. Futures notional is not treated as a cash purchase. Finite margin reserves do not eliminate variation-margin funding needs. Curve scans reject an entry if the account preview requires more margin than its modeled instrument metadata, or if fees cannot be reconciled. The separate stock scanner can instead raise its funded-capital estimate from an account preview. Sandbox and fixture estimates are labeled as unverified. Subscription fees are excluded.
+Curve capital includes the cash-funded bond purchase where applicable, each futures leg's applicable initial margin, the margin reserve and entry charges. Costs include entry and estimated exit fees for all three tariff families and execution/carry reserves. Futures notional is not treated as a cash purchase. Finite margin reserves do not eliminate variation-margin funding needs. Curve scans reject an entry if the account preview requires more margin than its modeled instrument metadata, or if fees cannot be reconciled. The separate stock scanner can instead raise its funded-capital estimate from an account preview. Sandbox and fixture estimates are labeled as unverified. Subscription fees are excluded.
 
 ## Costs and alerts
 
@@ -202,9 +202,7 @@ See [verified commission rules and sources](docs/commissions.md).
 - Production candidates are fetched again and their actual-account entry commission previews must match a published tariff/rate/floor. Unknown tariffs, missing previews or unexplained differences suppress new entries and their alerts. Account-specific initial margin can raise required funded capital. Sandbox does not claim this validation.
 - Entry eligibility requires both net profit and excess profit above the cash benchmark. Funding includes the stock purchase, initial margin, reserve and entry fees. Quotes must be fresh, synchronized, uncrossed and tradeable, with full depth for both legs. Rejected candidates and unavailable marks remain visible in reports and history.
 
-Telegram identifies the fixed minimum eligible tariff and shows open or closed P&L for all three scenarios. It includes source and fee-validation status. Alert cooldown prevents repeated observations from flooding the chat; failed delivery can retry. No broker trades are executed by an alert or a paper close.
-
-Curve alerts name the strategy and paired sides, show the frozen target and its historical or fitted source, and separate expected target-convergence profits from current executable-close estimates or realized **mock** closes. They include the duration/parallel-curve approximation where relevant. A gap or expected profit alone is not recorded as realized P&L.
+Telegram names the paper position, strategy, source, tariff and legs, then the three tariff results as net profit after costs. An opening alert is the target-scenario estimate. A later alert is the current mark, or the realized paper result after a close. Alert cooldown prevents repeated observations from flooding the chat; failed delivery can retry. No broker trades are executed by an alert or a paper close.
 
 ## Inspecting and settling positions
 

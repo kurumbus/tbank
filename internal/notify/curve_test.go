@@ -35,22 +35,15 @@ func TestCurveOpeningMessageShowsScenarioNotRealizedProfit(t *testing.T) {
 		t.Run(strategy, func(t *testing.T) {
 			p := curvePositionForMessage(strategy)
 			text := FormatCurvePositionMessage("production", p)
-			for _, want := range []string{"MOCK / OPEN | curve position #7", "Strategy: " + curveStrategy(strategy), "source: fixture", "minimum eligible tariff: trader (fixed)", "Entry BUY KKZ6", "Entry SELL KKG7", "fixture_unverified", "frozen target: 0.4", "31 earlier observations", "Entry target-convergence scenario (estimate)", "investor: 100.00 / 60.00", "trader: 130.00 / 90.00", "premium: 150.00 / 110.00", "Current P&L: unavailable", "Target convergence is conditional"} {
+			for _, want := range []string{"MOCK OPEN #7 curve | " + curveStrategy(strategy) + " | fixture", "trader", "BUY KKZ6", "SELL KKG7", "Gross 200.00", "Entry net:", "investor: 100.00", "trader: 130.00", "premium: 150.00"} {
 				if !strings.Contains(text, want) {
 					t.Errorf("missing %q in %s", want, text)
 				}
 			}
-			if strings.Contains(text, "Realized mock-close") {
-				t.Fatal("entry projection called realized profit")
-			}
-			if strategy == curve.OFZRGBI && (!strings.Contains(text, "Proxy warning:") || !strings.Contains(text, "Proxy opt-in: false")) {
-				t.Fatal("missing duration-proxy limitation")
-			}
-			if strategy != curve.OFZRGBI && !strings.Contains(text, "30 samples spanning 24h0m0s") {
-				t.Fatal("missing calendar history guard")
-			}
-			if strategy == curve.OFZRGBI && !strings.Contains(text, "Peer-curve minimum: 4 bonds") {
-				t.Fatal("missing OFZ fitted-curve distinction")
+			for _, absent := range []string{"Realized", "Note:", "Pre-tax", "fixture_unverified", "frozen target", "Proxy warning", "Historical baseline", "60.00", "90.00", "110.00"} {
+				if strings.Contains(text, absent) {
+					t.Errorf("opening alert still contains %q:\n%s", absent, text)
+				}
 			}
 		})
 	}
@@ -63,14 +56,14 @@ func TestRelativeAlertsDistinguishCashIncomeFundingAndOneLegOffer(t *testing.T) 
 	p.Entry.HedgeMeasure = "unhedged_event_risk"
 	p.Latest = &curve.Valuation{ObservedAt: p.OpenedAt.Add(time.Hour), CashIncome: decimal.NewFromInt(7), FundingIncome: decimal.NewFromInt(-3), Scenarios: p.Entry.Scenarios}
 	text := FormatCurvePositionMessage("fixture", p)
-	for _, want := range []string{"relative-value position #7", "Mandatory cash offer", "Entry BUY UGLD", "coupons/distributions: 7.00 RUB", "funding: -3.00 RUB", "Current executable-close estimate"} {
+	for _, want := range []string{"MOCK OPEN #7 relative | Mandatory cash offer | fixture", "BUY UGLD", "Now 2026-10-25 13:00Z net:", "income 7.00", "funding -3.00"} {
 		if !strings.Contains(text, want) {
 			t.Errorf("missing %q in %s", want, text)
 		}
 	}
-	for _, absent := range []string{"Historical baseline minimum", "Absolute DV01 unavailable", "Entry SELL", "Realized mock-close P&L"} {
+	for _, absent := range []string{"Historical baseline", "DV01", "SELL", "Realized", "Note:"} {
 		if strings.Contains(text, absent) {
-			t.Errorf("inapplicable %q in cash-offer message", absent)
+			t.Errorf("inapplicable %q in cash-offer message:\n%s", absent, text)
 		}
 	}
 }
@@ -79,23 +72,27 @@ func TestCurveCurrentAndClosedPnLStaySeparateFromEntryProjection(t *testing.T) {
 	p := curvePositionForMessage(curve.RUONIACalendar)
 	p.Latest = &curve.Valuation{ObservedAt: p.OpenedAt.Add(time.Hour), Kind: "mark", Metric: curve.Metric{Value: decimal.RequireFromString("0.5"), Unit: "percentage_points"}, CashBenchmark: decimal.NewFromInt(5), Scenarios: []scanner.Scenario{{Profile: "investor", NetProfit: decimal.NewFromInt(80), ExcessProfit: decimal.NewFromInt(75)}, {Profile: "trader", NetProfit: decimal.NewFromInt(100), ExcessProfit: decimal.NewFromInt(95)}, {Profile: "premium", NetProfit: decimal.NewFromInt(110), ExcessProfit: decimal.NewFromInt(105)}}}
 	text := FormatCurvePositionMessage("fixture", p)
-	for _, want := range []string{"Entry target-convergence scenario (estimate)", "Current executable-close estimate", "investor: 100.00 / 60.00", "investor: 80.00 / 75.00", "Elapsed cash benchmark: 5.00 RUB", "marked: 2026-10-25 13:00:00Z", "minimum eligible tariff: trader (fixed)"} {
+	for _, want := range []string{"Now 2026-10-25 13:00Z net:", "investor: 80.00", "trader: 100.00", "premium: 110.00", "income 0.00", "funding 0.00", "trader | 14d"} {
 		if !strings.Contains(text, want) {
-			t.Errorf("missing %q", want)
+			t.Errorf("missing %q in %s", want, text)
 		}
+	}
+	if strings.Contains(text, "investor: 100.00") || strings.Contains(text, "75.00") || strings.Contains(text, "Realized") || strings.Contains(text, "Entry net:") || strings.Contains(text, "cash ") {
+		t.Fatalf("current mark mixed with entry projection or cash yield: %s", text)
 	}
 	p.Status = "closed"
 	p.ClosedAt = &p.Latest.ObservedAt
 	p.CloseReason = "target_reached"
 	text = FormatCurvePositionMessage("fixture", p)
-	for _, want := range []string{"MOCK / CLOSED", "Realized mock-close P&L", "Closed: 2026-10-25 13:00:00Z | reason: target_reached"} {
+	for _, want := range []string{"MOCK CLOSED #7", "Realized net:", "Closed 2026-10-25 13:00Z | target_reached"} {
 		if !strings.Contains(text, want) {
-			t.Errorf("missing %q", want)
+			t.Errorf("missing %q in %s", want, text)
 		}
 	}
 	p.Status = "awaiting_exit"
-	if text = FormatCurvePositionMessage("fixture", p); !strings.Contains(text, "Last valid close-value estimate (not a fill)") {
-		t.Fatal("waiting state treated as realized exit")
+	text = FormatCurvePositionMessage("fixture", p)
+	if !strings.Contains(text, "Last mark 2026-10-25 13:00Z, not a fill:") || strings.Contains(text, "Realized") {
+		t.Fatalf("waiting state treated as realized exit: %s", text)
 	}
 }
 
@@ -112,13 +109,13 @@ func TestCurveMessageBoundsUntrustedLabelsAndPreservesWarnings(t *testing.T) {
 	if strings.Contains(text, "_[x]\nforged") || !strings.Contains(text, "<b>OFZ</b>_[x] forged") {
 		t.Fatal("labels not plain-text single line")
 	}
-	for _, want := range []string{"Proxy warning:", "investor: 100.00", "trader: 130.00", "premium: 150.00", "Target convergence is conditional"} {
+	for _, want := range []string{"SELL KKG7", "14d", "<b>OFZ</b>_[x] forged", "Entry net:", "investor: 100.00"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("essential content truncated: %q", want)
 		}
 	}
-	if strings.Count(text, "duplicate warning") != 1 {
-		t.Fatal("duplicate warnings repeated")
+	if strings.Contains(text, "duplicate warning") || strings.Contains(text, "Note:") {
+		t.Fatal("method notes belong in the report, not the alert")
 	}
 }
 
@@ -128,14 +125,14 @@ func TestCurveUnknownDV01IsNotShownAsZeroRisk(t *testing.T) {
 	p.Entry.DV01Known = false
 	p.Entry.ResidualDV01Ratio = decimal.RequireFromString("0.02")
 	text := FormatCurvePositionMessage("fixture", p)
-	if !strings.Contains(text, "Hedge: index_notional | residual mismatch: 2.00%") || !strings.Contains(text, "Absolute DV01 unavailable") || strings.Contains(text, "0 RUB/bp") {
-		t.Fatalf("unknown DV01 shown as known neutrality: %s", text)
+	if strings.Contains(text, "DV01") || strings.Contains(text, "0 RUB/bp") || strings.Contains(text, "mismatch") {
+		t.Fatalf("hedge diagnostics belong in the report: %s", text)
 	}
 	p.Entry.DV01Known = true
 	p.Entry.ResidualDV01 = decimal.RequireFromString("0.001")
 	text = FormatCurvePositionMessage("fixture", p)
-	if !strings.Contains(text, "Residual DV01 (duration proxy): 0.001 RUB/bp") {
-		t.Fatalf("duration approximation or precision lost: %s", text)
+	if strings.Contains(text, "0.001") || strings.Contains(text, "RUB/bp") {
+		t.Fatalf("known DV01 dumped into the alert: %s", text)
 	}
 }
 
@@ -157,7 +154,7 @@ func TestSendCurvePositionUsesPlainTextAndRedactsFailure(t *testing.T) {
 	if _, ok := payload["parse_mode"]; ok {
 		t.Fatal("curve message enables markup")
 	}
-	if text, _ := payload["text"].(string); !strings.Contains(text, "MOCK / OPEN") {
+	if text, _ := payload["text"].(string); !strings.Contains(text, "MOCK OPEN") {
 		t.Fatal("missing curve text")
 	}
 	var missing *Client

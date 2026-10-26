@@ -98,13 +98,12 @@ func TestCurvePositionLifetimeCostsUseElapsedTimeAndOneExecutionReserve(t *testi
 			t.Fatal(err)
 		}
 		carry := entry.CapitalRequired.Mul(entry.Policy.CarryReserveRate).Mul(years(elapsed))
-		cash := entry.CapitalRequired.Mul(entry.Policy.CashRate).Mul(years(elapsed))
-		if !v.CarryReserve.Equal(carry) || !v.CashBenchmark.Equal(cash) || !v.ExecutionReserve.Equal(entry.ExecutionReserve) {
+		if !v.CarryReserve.Equal(carry) || !v.CashBenchmark.IsZero() || !v.ExecutionReserve.Equal(entry.ExecutionReserve) {
 			t.Fatal("mark reused forecast horizon or compounded execution reserve")
 		}
 		for _, scenario := range v.Scenarios {
 			want := v.GrossProfit.Add(v.CouponIncome).Sub(scenario.TradingFees).Sub(entry.ExecutionReserve).Sub(carry)
-			if !scenario.NetProfit.Equal(want) || !scenario.ExcessProfit.Equal(want.Sub(cash)) {
+			if !scenario.NetProfit.Equal(want) || !scenario.ExcessProfit.Equal(want) {
 				t.Fatal("lifetime profit cost accounting differs")
 			}
 		}

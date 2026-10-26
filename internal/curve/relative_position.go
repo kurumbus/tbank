@@ -97,7 +97,7 @@ func SettleRelativePosition(p Position, input RelativeSettlement) (Valuation, er
 	elapsed := years(input.PaidAt.Sub(p.OpenedAt))
 	quote := offer.OfferPriceRUB.Div(entry.Instrument.PriceFactor)
 	exit := Leg{Instrument: entry.Instrument, Side: "sell", Execution: "cash_offer", Lots: entry.Lots, Units: entry.Units, Price: quote, Limit: quote, Value: input.GrossProceedsRUB, FeeValue: input.GrossProceedsRUB}
-	v := Valuation{ObservedAt: input.ObservedAt, Kind: "settlement", Settlement: &saved, Legs: []Leg{exit}, GrossProfit: input.GrossProceedsRUB.Sub(entry.Value), CashIncome: input.NetDistributionsRUB, ExecutionReserve: p.Entry.ExecutionReserve, CarryReserve: p.Entry.CapitalRequired.Mul(p.Policy.CarryReserveRate).Mul(elapsed), CashBenchmark: p.Entry.CapitalRequired.Mul(p.Policy.CashRate).Mul(elapsed), ShouldClose: true, CloseReason: "verified_cash_offer_payment"}
+	v := Valuation{ObservedAt: input.ObservedAt, Kind: "settlement", Settlement: &saved, Legs: []Leg{exit}, GrossProfit: input.GrossProceedsRUB.Sub(entry.Value), CashIncome: input.NetDistributionsRUB, ExecutionReserve: p.Entry.ExecutionReserve, CarryReserve: p.Entry.CapitalRequired.Mul(p.Policy.CarryReserveRate).Mul(elapsed), ShouldClose: true, CloseReason: "verified_cash_offer_payment"}
 	v.LegProfits = []decimal.Decimal{v.GrossProfit}
 	for _, profile := range profiles {
 		fees, err := positionEntryFees(p.Entry, profile.Name)

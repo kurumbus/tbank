@@ -445,7 +445,8 @@ func priceCandidate(c Candidate, exits []Leg) (Candidate, error) {
 	if !c.CapitalRequired.IsPositive() {
 		return c, fmt.Errorf("nonpositive funded capital")
 	}
-	c.CashBenchmark = c.CapitalRequired.Mul(c.Policy.CashRate).Mul(years(horizon))
+	// The 15% cash yield is not subtracted. Profit is the target scenario after costs.
+	c.CashBenchmark = decimal.Zero
 	c.CarryReserve = c.CapitalRequired.Mul(c.Policy.CarryReserveRate).Mul(years(horizon))
 	c.ExecutionReserve = turnover.Mul(c.Policy.ExecutionBufferBPS).Div(bps)
 	for n, profile := range profiles {

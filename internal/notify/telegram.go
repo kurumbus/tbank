@@ -200,6 +200,22 @@ func FormatPositionMessage(source string, p scanner.Position) string {
 	return truncate(b.String(), 4096)
 }
 
+func writeScenarioNet(b *strings.Builder, scenarios []scanner.Scenario) {
+	for _, family := range []string{"investor", "trader", "premium"} {
+		found := false
+		for _, s := range scenarios {
+			if s.Profile == family {
+				fmt.Fprintf(b, "%s: %s\n", family, money(s.NetProfit))
+				found = true
+				break
+			}
+		}
+		if !found {
+			fmt.Fprintf(b, "%s: unknown\n", family)
+		}
+	}
+}
+
 func writeScenarioPnL(b *strings.Builder, scenarios []scanner.Scenario) {
 	for _, family := range []string{"investor", "trader", "premium"} {
 		found := false

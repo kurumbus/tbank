@@ -153,7 +153,6 @@ func MarkPosition(p Position, s Snapshot) (Valuation, error) {
 		return Valuation{}, err
 	}
 	elapsed := years(s.ObservedAt.Sub(p.OpenedAt))
-	v.CashBenchmark = p.Entry.CapitalRequired.Mul(p.Policy.CashRate).Mul(elapsed)
 	v.CarryReserve = p.Entry.CapitalRequired.Mul(p.Policy.CarryReserveRate).Mul(elapsed)
 	var cashCosts map[string][]scanner.FeeLine
 	if IsRelativeStrategy(p.Entry.Strategy) {
